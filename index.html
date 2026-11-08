@@ -541,6 +541,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
     <div class="hint" id="batInfo"></div>
     <div class="row" style="margin-top:8px"><button class="btn grow" id="bBatMaster">Cadena de máster</button><button class="btn grow" id="bBatExp">Ajustes de exportación</button></div>
     <label class="chk" style="margin-top:8px"><input type="checkbox" id="batZip" checked>Empaquetar todo en un ZIP</label>
+    <label class="chk"><input type="checkbox" id="batRename" checked>Renombrar los archivos como «NN - Título»</label>
     <button class="btn pri" id="bBatGo" style="width:100%;margin-top:8px">Procesar y exportar todo</button>
     <div class="row" style="margin-top:8px"><button class="btn grow" id="bBatAgain" style="display:none">Descargar de nuevo</button><button class="btn grow" id="bBatShare" style="display:none">Compartir</button></div>
     <div class="hint" id="batMsg" style="margin-top:8px"></div>
@@ -1114,7 +1115,7 @@ u.setModules(B,G,f,b,v,a,m,z,g);G.setModules(B,g,m,a);z.setModules(G,m);f.setMod
 a.length>D&&(D=a.length,p=0|1.25*D+7200,r=new Int8Array(p));a=u.lame_encode_buffer(q,a,b,a.length,r,0,p);return new Int8Array(r.subarray(0,a))};this.flush=function(){var a=u.lame_encode_flush(q,r,0,p);return new Int8Array(r.subarray(0,a))}};lamejs.WavHeader=Fa}lamejs();
 
 </script>
-<script>/* SampledHead Editor v1.08 */
+<script>/* SampledHead Editor v1.10 */
 'use strict';
 /* ====================== utilidades y estado ====================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
@@ -1968,11 +1969,28 @@ function metaForExport(){
   const any=MFIELDS.some(f=>f[0]!=='title'&&(m[f[0]]||'').trim())||COVER.bytes;if(!m.title&&any)m.title=$('#expName').value.trim()||nameBase();
   m.cover=COVER.bytes;return m;
 }
-function metaForBatch(it,idx,N){
-  if(!BM.on)return null;const nombre=baseName(it.f.name);const m={...BM.f};m.title=fillTpl(m.title,nombre,idx+1).trim()||nombre;
+function effMeta(it,idx,N){
+  const nombre=baseName(it.f.name);const m={...BM.f};m.title=fillTpl(m.title,nombre,idx+1).trim()||nombre;
   m.track=BM.auto?(idx+1)+'/'+N:'';
   for(const k in (it.meta||{})){const v=(it.meta[k]||'').trim();if(v)m[k]=v;}
   m.cover=COVER.bytes;return m;
+}
+function metaForBatch(it,idx,N){return BM.on?effMeta(it,idx,N):null;}
+/* nombre de archivo del lote: «NN - Título» (NN = pista, con ceros a la izquierda) */
+const cleanName=s=>(s||'').replace(/[\u0000-\u001f"*?<>]+/g,'').replace(/\s*:\s*/g,' - ').replace(/\s*[\\/|]\s*/g,'-').replace(/\s+/g,' ').trim().replace(/^[.\- ]+/,'').slice(0,120);
+function batchFileBase(it,idx,N){
+  const m=effMeta(it,idx,N);const clean=cleanName;
+  const title=clean(m.title)||clean(baseName(it.f.name))||'audio';
+  const tn=parseInt(String(m.track||'').split('/')[0],10);
+  if(!(tn>0))return title;
+  const w=Math.max(2,String(Math.max(N,tn)).length);return String(tn).padStart(w,'0')+' - '+title;
+}
+/* nombre del ZIP: «Artista - Álbum (Año)» */
+function batchZipBase(){
+  const f=BM.f,art=cleanName(f.albumArtist||f.artist),alb=cleanName(f.album),yr=cleanName((f.year||'').trim());
+  let s=[art,alb].filter(Boolean).join(' - ');
+  if(yr)s=s?s+' ('+yr+')':'('+yr+')';
+  return s||('SampledHead_lote_'+new Date().toISOString().slice(0,10));
 }
 function editItemMeta(it,idx,N,after){
   it.meta=it.meta||{};const eff=metaForBatch(it,idx,N)||{};const tmp={};MFIELDS.forEach(([k])=>tmp[k]=it.meta[k]||'');
@@ -2211,14 +2229,14 @@ async function runBatch(){
         setBusy(pfx+'Decodificando…',0.05);const buf=await decodeAB(ab,it.f.name);const o=bufToArrays(buf);
         const ex=await exportCore(o.L,o.R,o.sr,0,o.L.length,false,pfx);o.L=o.R=null;
         const blob=await encodeEx(ex,pfx,metaForBatch(it,i,N));
-        let nm=baseName(it.f.name)+ex.suf,k=1,full=nm+'.'+EXP.fmt;while(used.has(full.toLowerCase())){k++;full=nm+'_'+k+'.'+EXP.fmt;}used.add(full.toLowerCase());
+        let nm=$('#batRename').checked?batchFileBase(it,i,N):baseName(it.f.name)+ex.suf,k=1,full=nm+'.'+EXP.fmt;while(used.has(full.toLowerCase())){k++;full=nm+'_'+k+'.'+EXP.fmt;}used.add(full.toLowerCase());
         BAT.results.push({name:full,blob});it.st='ok';it.msg='Listo · '+fmtSize(blob.size);
       }catch(e){console.error(e);bad++;it.st='err';it.msg='Error: '+(e.message||e).toString().slice(0,60);}
       renderBatch();
     }
     if(!BAT.results.length){setBusy(null);msg.textContent='No se pudo procesar ningún archivo.';toast('Lote sin resultados',true);return;}
     const stamp=new Date().toISOString().slice(0,10);
-    if($('#batZip').checked){setBusy('Creando ZIP…',0.9);await sleep(10);BAT.zip=await makeZip(BAT.results);BAT.zipName='SampledHead_lote_'+stamp+'.zip';setBusy(null);saveBlob(BAT.zip,BAT.zipName);}
+    if($('#batZip').checked){setBusy('Creando ZIP…',0.9);await sleep(10);BAT.zip=await makeZip(BAT.results);BAT.zipName=batchZipBase()+'.zip';setBusy(null);saveBlob(BAT.zip,BAT.zipName);}
     else{setBusy(null);for(const r of BAT.results){saveBlob(r.blob,r.name);await sleep(450);}}
     msg.innerHTML='Listo: <b>'+BAT.results.length+'</b> archivo'+(BAT.results.length>1?'s':'')+(BAT.zip?' en <b>'+BAT.zipName+'</b> ('+(BAT.zip.size/1048576).toFixed(2)+' MB)':'')+(bad?' · <span style="color:var(--warn)">'+bad+' con error</span>':'')+'.';
     toast('Lote terminado');$('#bBatAgain').style.display='';
