@@ -1,5 +1,5 @@
-/* SampledHead Editor v1.05 · service worker */
-const V='shed-1.05',LAME='shed-lame';
+/* SampledHead Editor v1.06 · service worker */
+const V='shed-1.06',LAME='shed-lame';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(['./','index.html','manifest.webmanifest'])).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k!==LAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
