@@ -1,2 +1,2 @@
 # sampledheadapp
-Sampler, Looper y creador de Kits
+editor de audio
