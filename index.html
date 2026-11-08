@@ -268,6 +268,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   <div id="logo">Sampled<b>Head</b> Editor</div>
   <div id="fname">Sin audio</div>
   <button class="ib" id="bNew" title="Nuevo proyecto (vacía el editor; se puede deshacer)" aria-label="Nuevo proyecto">&#10010;</button>
+  <button class="ib" id="bOpen" title="Abrir proyecto (.shproj)" aria-label="Abrir proyecto">&#128194;</button>
+  <button class="ib" id="bSave" title="Guardar proyecto (Ctrl+S)" aria-label="Guardar proyecto">&#128190;</button>
+  <input type="file" id="fileP" accept=".shproj" hidden>
   <button class="ib" id="bUndo" title="Deshacer (Ctrl+Z)" aria-label="Deshacer" disabled>&#8630;</button>
   <button class="ib" id="bRedo" title="Rehacer (Ctrl+Mayús+Z)" aria-label="Rehacer" disabled>&#8631;</button>
 </header>
@@ -310,11 +313,12 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
    <div class="card">
     <h3 style="margin-bottom:8px">Edición</h3>
     <div class="tools" id="tools">
-      <button class="btn" data-a="trim"><i>&#9986;</i>Recortar</button>
-      <button class="btn" data-a="del"><i>&#10005;</i>Borrar</button>
-      <button class="btn" data-a="cut"><i>&#9998;</i>Cortar</button>
-      <button class="btn" data-a="copy"><i>&#10063;</i>Copiar</button>
-      <button class="btn" data-a="paste"><i>&#9112;</i>Pegar</button>
+      <button class="btn" data-a="trim" title="Recortar: conserva SOLO la selección y borra el resto (T)"><i>&#9635;</i>Recortar</button>
+      <button class="btn" data-a="del" title="Borrar la selección y unir los extremos, sin copiarla (Supr)"><i>&#10005;</i>Borrar</button>
+      <button class="btn" data-a="cut" title="Cortar: copia la selección, la quita y une los dos extremos (Ctrl+X)"><i>&#9986;</i>Cortar</button>
+      <button class="btn" data-a="copy" title="Copiar la selección (Ctrl+C)"><i>&#10063;</i>Copiar</button>
+      <button class="btn" data-a="paste" title="Pegar en el cursor (inserta y desplaza el resto); si hay selección, la sustituye (Ctrl+V)"><i>&#9112;</i><span id="pasteLbl">Pegar</span></button>
+      <button class="btn" data-a="extract" title="Sacar la selección o el portapapeles: proyecto nuevo o archivo WAV"><i>&#8689;</i>Extraer</button>
       <button class="btn" data-a="silence"><i>&#9632;</i>Silenciar</button>
       <button class="btn" data-a="fadein"><i>&#8599;</i>Fundido ent.</button>
       <button class="btn" data-a="fadeout"><i>&#8600;</i>Fundido sal.</button>
@@ -1115,7 +1119,7 @@ u.setModules(B,G,f,b,v,a,m,z,g);G.setModules(B,g,m,a);z.setModules(G,m);f.setMod
 a.length>D&&(D=a.length,p=0|1.25*D+7200,r=new Int8Array(p));a=u.lame_encode_buffer(q,a,b,a.length,r,0,p);return new Int8Array(r.subarray(0,a))};this.flush=function(){var a=u.lame_encode_flush(q,r,0,p);return new Int8Array(r.subarray(0,a))}};lamejs.WavHeader=Fa}lamejs();
 
 </script>
-<script>/* SampledHead Editor v1.10 */
+<script>/* SampledHead Editor v1.11 */
 'use strict';
 /* ====================== utilidades y estado ====================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
@@ -1437,11 +1441,13 @@ function editRange(label,a,b,fn){
 function doTrim(){if(!needSel()||!needBoth('Recortar'))return;const a=S.a,b=S.b;S.L=S.L.slice(a,b);S.R=S.R.slice(a,b);S.a=S.b=0;S.cur=0;S.vs=0;commit('Recortar');fitAll();}
 function doDelete(cut){
   if(!needSel()||!needBoth(cut?'Cortar':'Borrar'))return;const a=S.a,b=S.b;
-  if(cut)copyClip();
+  if(cut)copyClip(true);
   const n=len();const L=new Float32Array(n-(b-a)),R=new Float32Array(n-(b-a));L.set(S.L.subarray(0,a));L.set(S.L.subarray(b),a);R.set(S.R.subarray(0,a));R.set(S.R.subarray(b),a);
   S.L=L;S.R=R;S.cur=a;S.a=S.b=a;commit(cut?'Cortar':'Borrar');
+  toast((cut?'Cortado ':'Borrado ')+fmtT(b-a,S.sr,2)+' s · los extremos se han unido'+(cut?' · coloca el cursor y pulsa Pegar':''));
 }
-function copyClip(){if(!needSel())return;const ci=chIdx();S.clip={ch:S.ch,sr:S.sr,L:S.L.slice(S.a,S.b),R:S.R.slice(S.a,S.b)};if(S.ch==='L')S.clip.R=S.clip.L;if(S.ch==='R')S.clip.L=S.clip.R;toast('Copiado '+fmtT(S.b-S.a,S.sr,2)+' s');}
+function copyClip(){if(!needSel())return;const ci=chIdx();S.clip={ch:S.ch,sr:S.sr,L:S.L.slice(S.a,S.b),R:S.R.slice(S.a,S.b)};if(S.ch==='L')S.clip.R=S.clip.L;if(S.ch==='R')S.clip.L=S.clip.R;updClipBtn();if(!arguments[0])toast('Copiado '+fmtT(S.b-S.a,S.sr,2)+' s · coloca el cursor y pulsa Pegar');}
+function updClipBtn(){const l=$('#pasteLbl');if(l)l.textContent=S.clip?'Pegar ('+fmtT(S.clip.L.length,S.clip.sr,1)+' s)':'Pegar';}
 function doPaste(){
   if(!needAudio()&&!S.clip)return;if(!S.clip){toast('No hay nada copiado',true);return;}
   let cl=S.clip;if(cl.sr!==S.sr&&len()){toast('Se pegó con otra frecuencia de muestreo ('+cl.sr+' Hz); el tono cambiará',false);}
@@ -1450,7 +1456,7 @@ function doPaste(){
   if(S.ch==='LR'){
     const b=hasSel()?S.b:S.cur,n=len(),m=cl.L.length,N=n-(b-at)+m;const L=new Float32Array(N),R=new Float32Array(N);
     L.set(S.L.subarray(0,at));L.set(cl.L,at);L.set(S.L.subarray(b),at+m);R.set(S.R.subarray(0,at));R.set(cl.R,at);R.set(S.R.subarray(b),at+m);
-    S.L=L;S.R=R;S.a=at;S.b=at+m;S.cur=at;commit('Pegar');
+    S.L=L;S.R=R;S.a=at;S.b=at+m;S.cur=at;commit('Pegar');toast('Pegado '+fmtT(m,S.sr,2)+' s en '+fmtT(at,S.sr,2)+' s');
   }else{
     const ci=S.ch==='L'?0:1,src=ci?cl.R:cl.L,cp=(ci?S.R:S.L).slice(),m=Math.min(src.length,cp.length-at);cp.set(src.subarray(0,m),at);
     if(ci)S.R=cp;else S.L=cp;S.a=at;S.b=at+m;commit('Pegar en '+S.ch);
@@ -1998,6 +2004,107 @@ function editItemMeta(it,idx,N,after){
     const ph={};MFIELDS.forEach(([k])=>ph[k]=(eff[k]||'').toString());metaGrid(g,tmp,{ph});},
    [{t:'Borrar los míos',f:()=>{it.meta={};after&&after();}},{t:'Guardar',pri:true,f:()=>{it.meta={...tmp};after&&after();}}]);
 }
+
+/* ===== v1.11: Extraer (cortar y sacar) + guardar / abrir proyectos ===== */
+function extractSource(useClip){
+  if(useClip){const c=S.clip;return c?{L:c.L,R:c.R,sr:c.sr}:null;}
+  if(!hasSel())return null;
+  let L=S.L.slice(S.a,S.b),R=S.R.slice(S.a,S.b);
+  if(S.ch==='L')R=L;else if(S.ch==='R')L=R;
+  return {L,R,sr:S.sr};
+}
+function doExtract(){
+  if(S.busy)return;
+  if(!hasSel()&&!S.clip){toast('Selecciona una parte (o copia algo) para extraerla',true);return;}
+  openSheet('Extraer un trozo',bd=>{
+    bd.innerHTML='<label class="hint">Qué extraer</label><select id="exSrc" style="width:100%"></select>'+
+     '<div class="hint" style="margin-top:8px"><b>Proyecto nuevo</b>: el trozo pasa a ser el proyecto abierto (el anterior se recupera con Deshacer; guárdalo antes con 💾 si quieres conservarlo).<br><b>Descargar WAV</b>: guarda el trozo como archivo sin tocar el proyecto.</div>'+
+     '<label class="chk" style="margin-top:8px"><input type="checkbox" id="exCut"> <span>Quitarlo también del original (como Cortar)</span></label>';
+    const s=$('#exSrc',bd);
+    if(hasSel()){const o=document.createElement('option');o.value='sel';o.textContent='Selección ('+fmtT(S.b-S.a,S.sr,2)+' s)';s.appendChild(o);}
+    if(S.clip){const o=document.createElement('option');o.value='clip';o.textContent='Portapapeles ('+fmtT(S.clip.L.length,S.clip.sr,2)+' s)';s.appendChild(o);}
+    const upd=()=>{$('#exCut',bd).disabled=s.value!=='sel'||S.ch!=='LR';if($('#exCut',bd).disabled)$('#exCut',bd).checked=false;};
+    s.onchange=upd;upd();
+  },[{t:'Cancelar'},
+     {t:'Descargar WAV',f:()=>{const x=extractSource($('#exSrc').value==='clip');if(!x)return false;const cut=$('#exCut').checked;
+        const nm=(baseName(S.name)||'audio').replace(/[\\/:*?"<>|]+/g,'_')+' (extracto).wav';
+        saveBlob(encodeWav([x.L,x.R],x.sr,24,false),nm);toast('Descargado: '+nm);
+        if(cut){doDelete(true);}}},
+     {t:'Proyecto nuevo',pri:1,f:()=>{const useClip=$('#exSrc').value==='clip';const x=extractSource(useClip);if(!x)return false;
+        const cut=$('#exCut').checked&&!useClip;stopPlay(true);
+        const nm=(baseName(S.name)||'audio')+' (extracto)';
+        S.L=x.L;S.R=x.R;S.sr=x.sr;S.name=nm;S.a=S.b=0;S.cur=0;S.vs=0;
+        const e=$('#expName');if(e){delete e.dataset.user;e.value='';}
+        commit('Extraer');fitAll();toast('Extracto abierto como proyecto nuevo · '+fmtT(x.L.length,x.sr,2)+' s (Deshacer recupera el anterior)');}}]);
+}
+ACT.extract=doExtract;
+
+/* --- proyecto: .shproj = "SHPROJ1\0" + u32 largo cabecera + JSON (relleno a 4) + L + R + portada --- */
+const PJ_MAGIC='SHPROJ1\0';
+function projName(){return (baseName(S.name)||'proyecto').replace(/[\\/:*?"<>|]+/g,'_');}
+function doSaveProject(){
+  if(!len()){toast('No hay audio que guardar',true);return;}
+  const mb=n=>(n/1048576).toFixed(1)+' MB';
+  openSheet('Guardar proyecto',bd=>{
+    bd.innerHTML='<label class="hint">Nombre</label><input type="text" id="pjN" style="width:100%" maxlength="80">'+
+     '<label class="chk" style="margin-top:8px"><input type="checkbox" id="pjL"> <span>Versión ligera (16 bit, ocupa la mitad)</span></label>'+
+     '<div class="hint" id="pjI" style="margin-top:6px"></div>'+
+     '<div class="hint">Guarda el audio completo, el máster (cadena y preset), la selección y los metadatos con la portada. No guarda el historial de deshacer.</div>';
+    $('#pjN',bd).value=projName();
+    const u=()=>{$('#pjI',bd).textContent='Tamaño aproximado: '+mb(len()*2*($('#pjL',bd).checked?2:4));};$('#pjL',bd).onchange=u;u();
+  },[{t:'Cancelar'},{t:'Guardar',pri:1,f:()=>{
+    const nm=($('#pjN').value.trim()||'proyecto').replace(/[\\/:*?"<>|]+/g,'_'),light=$('#pjL').checked;
+    saveProjectFile(nm,light);}}]);
+}
+function saveProjectFile(nm,light){
+  const n=len(),fx=JSON.parse(JSON.stringify(FX));delete fx._mod;
+  const cover=COVER.bytes?new Uint8Array(COVER.bytes):null;
+  const hdr={v:1,app:'SampledHead Editor',ver:(window.__VER||''),name:S.name,sr:S.sr,n,bits:light?16:32,a:S.a,b:S.b,cur:S.cur,ch:S.ch,
+    fx,meta:EM.f,metaOn:EM.on,coverLen:cover?cover.length:0,saved:new Date().toISOString()};
+  const hb=new TextEncoder().encode(JSON.stringify(hdr));
+  const head=new Uint8Array(12+hb.length+((4-(12+hb.length)%4)%4));
+  for(let i=0;i<8;i++)head[i]=PJ_MAGIC.charCodeAt(i);
+  new DataView(head.buffer).setUint32(8,head.length-12,true);head.fill(32,12);head.set(hb,12);
+  let pa,pb;
+  if(light){const q=a=>{const o=new Int16Array(a.length);for(let i=0;i<a.length;i++)o[i]=Math.round(clamp(a[i],-1,1)*32767);return o;};pa=q(S.L);pb=q(S.R);}
+  else{pa=S.L;pb=S.R;}
+  const parts=[head,pa,pb];if(cover)parts.push(cover);
+  saveBlob(new Blob(parts,{type:'application/octet-stream'}),nm+'.shproj');
+  toast('Proyecto guardado: '+nm+'.shproj');
+}
+async function openProjectFile(file){
+  if(!file)return;
+  try{
+    setBusy('Abriendo proyecto…',0.2);await sleep(20);
+    const ab=await file.arrayBuffer(),u8=new Uint8Array(ab);
+    for(let i=0;i<8;i++)if(u8[i]!==PJ_MAGIC.charCodeAt(i))throw new Error('Este archivo no es un proyecto de SampledHead Editor (.shproj)');
+    const hl=new DataView(ab).getUint32(8,true);
+    const h=JSON.parse(new TextDecoder().decode(u8.subarray(12,12+hl)));
+    let off=12+hl;const n=h.n,bytes=h.bits===16?2:4;
+    if(!(n>0)||off+n*2*bytes>ab.byteLength)throw new Error('El proyecto está incompleto o dañado');
+    let L,R;
+    if(h.bits===16){const a=new Int16Array(ab,off,n);off+=n*2;const b=new Int16Array(ab,off,n);off+=n*2;L=new Float32Array(n);R=new Float32Array(n);for(let i=0;i<n;i++){L[i]=a[i]/32767;R[i]=b[i]/32767;}}
+    else{L=new Float32Array(ab.slice(off,off+n*4));off+=n*4;R=new Float32Array(ab.slice(off,off+n*4));off+=n*4;}
+    stopPlay(true);
+    S.L=L;S.R=R;S.sr=h.sr||44100;S.name=h.name||file.name.replace(/\.shproj$/i,'');
+    S.a=clamp(h.a|0,0,n);S.b=clamp(h.b|0,0,n);S.cur=clamp(h.cur|0,0,n);S.vs=0;S.ch=['LR','L','R'].includes(h.ch)?h.ch:'LR';
+    const e=$('#expName');if(e){delete e.dataset.user;e.value='';}
+    /* máster */
+    if(h.fx){const f=h.fx;for(const k of MODORD)if(f[k])FX[k]=Object.assign(defMod(k),f[k]);FX.inG=f.inG||0;FX.outG=f.outG||0;FX.name=f.name||'';FX.cat=f.cat||'';FX._mod=0;renderMods();sendFx();saveFx();updPName();refreshLists();}
+    /* metadatos y portada */
+    if(h.meta){Object.assign(EM.f,h.meta);if(typeof h.metaOn==='boolean')EM.on=h.metaOn;}
+    if(h.coverLen>0&&off+h.coverLen<=ab.byteLength)setCover(new Uint8Array(ab.slice(off,off+h.coverLen)));
+    if(window.__metaERender)__metaERender();
+    commit('Abrir proyecto');fitAll();showTab('edit');
+    toast('Proyecto abierto: '+(S.name||file.name)+' · '+fmtT(n,S.sr,1)+' s (Deshacer recupera el anterior)');
+  }catch(e){console.error(e);toast(e.message||'No se pudo abrir el proyecto',true);}
+  setBusy(null);
+}
+$('#bSave').onclick=doSaveProject;
+$('#bOpen').onclick=()=>$('#fileP').click();
+$('#fileP').onchange=e=>{const f=e.target.files[0];e.target.value='';openProjectFile(f);};
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();doSaveProject();}});
+window.__openProject=openProjectFile;
 
 /* ====================== ocupado / progreso ====================== */
 let busyEl=null;
