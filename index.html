@@ -2710,6 +2710,7 @@ async function brgRegister(){try{await BRG.set('url:editor',brgSelfUrl());}catch
 /* abre el sampler en otra pestaña; si no se conoce su dirección, la pide una vez */
 async function brgOpenSampler(){
   let u=null;try{u=await BRG.get('url:sampler');}catch(e){}
+  if(!u)u='https://sampledhead-dot.github.io/sampledhead-app/';
   if(u){window.open(u,'_blank');return;}
   openSheet('Dirección del sampler',bd=>{
     bd.innerHTML='<div class="hint">El sampler guarda su dirección la primera vez que lo abres con la versión nueva (1.58). Si aún no lo has hecho, pégala aquí (debe ser del mismo usuario de GitHub Pages que el editor).</div><input type="url" id="brgU" style="width:100%;margin-top:8px" placeholder="https://usuario.github.io/sampler/">';
