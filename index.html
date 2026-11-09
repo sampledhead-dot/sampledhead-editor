@@ -505,6 +505,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
     <select id="stmMode" style="width:100%"><option value="all">Los 6 stems (voz, batería, bajo, guitarra, piano y otros)</option><option value="vi">Voz + instrumental</option><option value="custom">Elegir pistas…</option></select>
     <div id="stmChecks" style="margin-top:6px"></div>
     <div class="hint" style="margin-top:8px">Separa todo el proyecto. La IA siempre calcula los 6 stems; elegir menos reduce lo que se guarda en memoria y lo que ves en el mezclador. Tarda varias veces la duración del audio (más en el móvil): deja la pantalla encendida.</div>
+    <label class="chk" style="margin-top:8px"><input type="checkbox" id="stmLow"> <span>Modo de poca memoria (recomendado en móvil; algo más lento)</span></label>
+    <div class="hint" id="stmErr" style="display:none;margin-top:8px;color:var(--bad,#ff6b6b);white-space:pre-wrap;word-break:break-word"></div>
     <div class="hint" id="stmModel" style="margin-top:8px"></div>
     <div class="row" style="margin-top:8px"><button class="btn pri grow" id="stmGo">Separar</button><button class="btn" id="stmLoadFile" title="Cargar el modelo htdemucs_6s_fp16weights.onnx desde un archivo">Modelo desde archivo</button><button class="btn" id="stmDelModel" style="display:none">Borrar modelo</button></div>
     <input type="file" id="stmFile" accept=".onnx" hidden>
@@ -1160,7 +1162,7 @@ u.setModules(B,G,f,b,v,a,m,z,g);G.setModules(B,g,m,a);z.setModules(G,m);f.setMod
 a.length>D&&(D=a.length,p=0|1.25*D+7200,r=new Int8Array(p));a=u.lame_encode_buffer(q,a,b,a.length,r,0,p);return new Int8Array(r.subarray(0,a))};this.flush=function(){var a=u.lame_encode_flush(q,r,0,p);return new Int8Array(r.subarray(0,a))}};lamejs.WavHeader=Fa}lamejs();
 
 </script>
-<script>/* SampledHead Editor v1.14 */
+<script>/* SampledHead Editor v1.15 */
 'use strict';
 /* ====================== utilidades y estado ====================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
@@ -2220,7 +2222,7 @@ async function stmDownload(){
 }
 async function stmLoadOrt(){
   if(window.ort)return;
-  await new Promise((ok,ko)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+STM.ORT+'/dist/ort.min.js';s.onload=ok;s.onerror=()=>ko(new Error('No se pudo cargar el motor de IA (onnxruntime-web). Hace falta conexión la primera vez.'));document.head.appendChild(s);});
+  await new Promise((ok,ko)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+STM.ORT+'/dist/ort.wasm.min.js';s.onload=ok;s.onerror=()=>ko(new Error('No se pudo cargar el motor de IA (onnxruntime-web). Hace falta conexión la primera vez.'));document.head.appendChild(s);});
   ort.env.wasm.wasmPaths='https://cdn.jsdelivr.net/npm/onnxruntime-web@'+STM.ORT+'/dist/';
   ort.env.wasm.numThreads=(self.crossOriginIsolated?Math.min(4,navigator.hardwareConcurrency||2):1);
 }
@@ -2241,14 +2243,18 @@ async function stmSeparate(){
   if(S.busy)return;if(!len()){toast('No hay audio que separar',true);return;}
   const groups=stmGroups();if(!groups.length){toast('Elige al menos una pista',true);return;}
   if(ST.tracks.length&&!confirm('Ya hay stems en el proyecto. ¿Sustituirlos por la nueva separación?'))return;
-  stmStop();ST.cancel=false;
+  stmStop();ST.cancel=false;let stage='preparar';
   try{
     setBusy('Preparando el motor de IA…',0.02,()=>{ST.cancel=true;});await stmLoadOrt();
     let buf=await stmCached();if(!buf)buf=await stmDownload();
     if(ST.cancel)throw new Error('Cancelado');
-    setBusy('Cargando el modelo…',0.03,()=>{ST.cancel=true;});await sleep(20);
-    const sess=await ort.InferenceSession.create(new Uint8Array(buf),{executionProviders:['wasm'],graphOptimizationLevel:'all'});
-    buf=null;
+    if(window.__ortDead)throw new Error('El motor de IA se detuvo antes por falta de memoria. Recarga la página (cierra la pestaña y ábrela de nuevo) y prueba con el «Modo de poca memoria» activado.');
+    const low=$('#stmLow').checked;LS.set('stmLow',low?1:0);
+    setBusy('Cargando el modelo en memoria… (puede tardar un poco)',0.03,()=>{ST.cancel=true;});await sleep(50);
+    let u8=new Uint8Array(buf);buf=null;let sess;
+    try{sess=await ort.InferenceSession.create(u8,{executionProviders:['wasm'],graphOptimizationLevel:low?'disabled':'all',enableCpuMemArena:false,enableMemPattern:false,executionMode:'sequential'});}
+    catch(e){stage='cargar el modelo';throw e;}
+    u8=null;
     /* entrada a 44,1 kHz */
     let XL=S.L,XR=S.R;if(S.sr!==STM.SR){setBusy('Remuestreando a 44,1 kHz…',0.04,()=>{ST.cancel=true;});const o=await resample([S.L,S.R],S.sr,STM.SR);XL=o[0];XR=o[1];}
     const n=XL.length,N=STM.N,ov=Math.floor(N/4),stride=N-ov;
@@ -2262,7 +2268,7 @@ async function stmSeparate(){
       const el=(performance.now()-t0)/1000,eta=c?el/c*(nCh-c):0;
       setBusy('Separando… trozo '+(c+1)+' de '+nCh+(c?' · quedan ≈ '+fmtDur(eta):''),0.05+0.9*c/nCh,()=>{ST.cancel=true;});
       await sleep(0);
-      const res=await sess.run({mix:new ort.Tensor('float32',inp,[1,2,N])});const o=res.stems.data;
+      let res;try{res=await sess.run({mix:new ort.Tensor('float32',inp,[1,2,N])});}catch(e){stage='separar el trozo '+(c+1)+' de '+nCh;throw e;}const o=res.stems.data;
       for(let gi=0;gi<groups.length;gi++){const [aL,aR]=acc[gi];
         for(const k of groups[gi].idx){const bL=(k*2)*N,bR=(k*2+1)*N;for(let j=0;j<m;j++){const ww=w[j];aL[pos+j]+=o[bL+j]*ww;aR[pos+j]+=o[bR+j]*ww;}}}
       for(let j=0;j<m;j++)ws[pos+j]+=w[j];
@@ -2279,8 +2285,12 @@ async function stmSeparate(){
     ST.tracks=tracks;ST.sr=S.sr;ST.n=tracks[0].buf.length;ST.base=baseName(S.name)||'audio';
     stmRender();stmUpdInfo();stmModelInfo();setBusy(null);
     toast('Listo: '+tracks.length+' pista'+(tracks.length>1?'s':'')+' separada'+(tracks.length>1?'s':'')+' en '+fmtDur((performance.now()-t0)/1000));
-  }catch(e){setBusy(null);console.error(e);toast(e.message==='Cancelado'?'Separación cancelada':(e.message||'Error al separar'),true);}
+  }catch(e){setBusy(null);console.error(e);const m=String((e&&e.message)||e);
+    if(m==='Cancelado'){toast('Separación cancelada',true);return;}
+    if(/abort|memory|alloc|out of/i.test(m)){window.__ortDead=true;stmShowErr('El motor de IA se quedó sin memoria al '+stage+'. Recarga la página y vuelve a probar con el «Modo de poca memoria» activado'+(window.__lowOn?' (ya estaba activado: prueba en un ordenador o con otro dispositivo)':'')+'.\n\nDetalle técnico: '+m);return;}
+    stmShowErr('Error al '+stage+': '+m);}
 }
+function stmShowErr(msg){toast(msg.split('\n')[0],true);const e=$('#stmErr');if(e){e.style.display='';e.textContent=msg;}}
 function fmtDur(s){s=Math.round(s);return s>=60?Math.floor(s/60)+' min '+(s%60)+' s':s+' s';}
 function stmMakeTrack(id,name,col,l,r,sr){
   const buf=new AudioBuffer({numberOfChannels:2,length:l.length,sampleRate:sr});buf.copyToChannel(l,0);buf.copyToChannel(r,1);
@@ -2338,7 +2348,9 @@ function stmInit(){
   g.innerHTML=STM.ORDER.map(k=>'<label class="chk"><input type="checkbox" id="stk_'+k+'" '+(k==='drums'?'checked':'')+'> <span>'+STM.NAMES[k]+'</span></label>').join('')+'<label class="chk" style="margin-top:4px"><input type="checkbox" id="stmRest" checked> <span>Añadir «Resto» (todo lo demás, para que la suma sea la mezcla)</span></label>';
   const upd=()=>{g.style.display=$('#stmMode').value==='custom'?'':'none';};
   $('#stmMode').onchange=upd;upd();
-  $('#stmGo').onclick=stmSeparate;
+  const lo=LS.get('stmLow',null);$('#stmLow').checked=lo==null?((navigator.deviceMemory&&navigator.deviceMemory<=4)||matchMedia('(pointer:coarse)').matches):lo==1;
+  $('#stmLow').onchange=()=>{window.__lowOn=$('#stmLow').checked;};window.__lowOn=$('#stmLow').checked;
+  $('#stmGo').onclick=()=>{const e=$('#stmErr');if(e)e.style.display='none';stmSeparate();};
   $('#stmPlay').onclick=()=>ST.playing?stmPause():stmPlay();
   $('#stmStop').onclick=()=>{stmStop(true);ST.pos=0;stmUpdPlay();stmPlayheads();};
   $('#stmPos').oninput=e=>stmSeek(e.target.value/10);
