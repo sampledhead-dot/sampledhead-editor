@@ -262,6 +262,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 
 .bitem button.mv{height:30px;min-width:28px;padding:0;font-size:11px}.bitem button:disabled{opacity:.3}
 @media(max-width:520px){.bitem{gap:5px;padding:6px 7px}.bitem button{min-width:28px}.bitem .bs{display:none}}
+
+#wavewrap.locked{outline:2px solid var(--acc,#1de9b6);outline-offset:-2px}
+#bLockA.on,#bLockB.on{background:var(--acc,#1de9b6);color:#04120f;border-color:transparent}
 </style></head><body data-tab="edit">
 <div id="app">
 <header id="top">
@@ -296,6 +299,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       <button class="btn sm sq" id="zIn" title="Acercar (+)">+</button>
       <button class="btn sm" id="zSel" title="Ajustar zoom a la selección">Sel.</button>
       <button class="btn sm" id="zAll" title="Ver todo">Todo</button>
+      <button class="btn sm" id="bLockA" aria-pressed="false" title="Bloquear el INICIO de la selección (no se mueve por accidente; el fin sigue libre)">&#128275; Inicio</button>
+      <button class="btn sm" id="bLockB" aria-pressed="false" title="Bloquear el FIN de la selección (no se mueve por accidente; el inicio sigue libre)">&#128275; Fin</button>
       <button class="btn sm" id="bSnap" title="Ajustar los extremos de la selección al cruce por cero más cercano">Cruce 0</button>
     </div>
     <div id="wavewrap">
@@ -318,6 +323,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       <button class="btn" data-a="cut" title="Cortar: copia la selección, la quita y une los dos extremos (Ctrl+X)"><i>&#9986;</i>Cortar</button>
       <button class="btn" data-a="copy" title="Copiar la selección (Ctrl+C)"><i>&#10063;</i>Copiar</button>
       <button class="btn" data-a="paste" title="Pegar en el cursor (inserta y desplaza el resto); si hay selección, la sustituye (Ctrl+V)"><i>&#9112;</i><span id="pasteLbl">Pegar</span></button>
+      <button class="btn" data-a="tobatch" title="Enviar el audio (o la selección) a la pestaña Lote, con o sin cadena de máster"><i>&#10138;</i>A lote</button>
       <button class="btn" data-a="extract" title="Sacar la selección o el portapapeles: proyecto nuevo o archivo WAV"><i>&#8689;</i>Extraer</button>
       <button class="btn" data-a="silence"><i>&#9632;</i>Silenciar</button>
       <button class="btn" data-a="fadein"><i>&#8599;</i>Fundido ent.</button>
@@ -545,7 +551,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
     <div class="hint" id="batInfo"></div>
     <div class="row" style="margin-top:8px"><button class="btn grow" id="bBatMaster">Cadena de máster</button><button class="btn grow" id="bBatExp">Ajustes de exportación</button></div>
     <label class="chk" style="margin-top:8px"><input type="checkbox" id="batZip" checked>Empaquetar todo en un ZIP</label>
-    <label class="chk"><input type="checkbox" id="batRename" checked>Renombrar los archivos como «NN - Título»</label>
+    <div class="hint" style="margin-top:6px">Los archivos se renombran solos como «NN - Título»: el título es el que escribas en los metadatos (común o con ✎ por archivo); si lo dejas vacío se usa el nombre original.</div>
     <button class="btn pri" id="bBatGo" style="width:100%;margin-top:8px">Procesar y exportar todo</button>
     <div class="row" style="margin-top:8px"><button class="btn grow" id="bBatAgain" style="display:none">Descargar de nuevo</button><button class="btn grow" id="bBatShare" style="display:none">Compartir</button></div>
     <div class="hint" id="batMsg" style="margin-top:8px"></div>
@@ -1119,7 +1125,7 @@ u.setModules(B,G,f,b,v,a,m,z,g);G.setModules(B,g,m,a);z.setModules(G,m);f.setMod
 a.length>D&&(D=a.length,p=0|1.25*D+7200,r=new Int8Array(p));a=u.lame_encode_buffer(q,a,b,a.length,r,0,p);return new Int8Array(r.subarray(0,a))};this.flush=function(){var a=u.lame_encode_flush(q,r,0,p);return new Int8Array(r.subarray(0,a))}};lamejs.WavHeader=Fa}lamejs();
 
 </script>
-<script>/* SampledHead Editor v1.11 */
+<script>/* SampledHead Editor v1.13 */
 'use strict';
 /* ====================== utilidades y estado ====================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
@@ -1371,12 +1377,21 @@ function zc(s){ /* cruce por cero más cercano */
   let best=s,bd=1e9;for(let d=0;d<=W;d++){for(const sg of [-1,1]){const i=s+sg*d;if(i<1||i>=n)continue;const a=src[i-1],b=src[i];if((a<=0&&b>0)||(a>=0&&b<0)){if(d<bd){bd=d;best=i;}}}if(bd<1e9)break;}
   return best;
 }
+let lockT=0;
+function lockToast(){const t=Date.now();if(t-lockT<1500)return;lockT=t;toast('🔒 '+(S.lockA&&S.lockB?'Inicio y fin bloqueados':S.lockA?'Inicio bloqueado (el fin sí se puede mover)':'Fin bloqueado (el inicio sí se puede mover)')+': desbloquéalo con su candado para moverlo');}
+function setLock(a,b,quiet){S.lockA=!!a;S.lockB=!!b;LS.set('lockA',S.lockA?1:0);LS.set('lockB',S.lockB?1:0);
+  for(const [id,v,t] of [['#bLockA',S.lockA,'Inicio'],['#bLockB',S.lockB,'Fin']]){const e=$(id);if(e){e.classList.toggle('on',v);e.setAttribute('aria-pressed',v?'true':'false');e.innerHTML=(v?'&#128274; ':'&#128275; ')+t;}}
+  const w=$('#wavewrap');if(w)w.classList.toggle('locked',S.lockA||S.lockB);
+  if(!quiet)toast(S.lockA&&S.lockB?'🔒 Inicio y fin bloqueados':S.lockA?'🔒 Inicio bloqueado':S.lockB?'🔒 Fin bloqueado':'Puntos desbloqueados');}
 function setSel(a,b){a=clamp(Math.round(a),0,len());b=clamp(Math.round(b),0,len());if(b<a)[a,b]=[b,a];S.a=a;S.b=b;if(b>a)S.cur=a;paintAll();updInfo();updSelPeak();}
 cv.addEventListener('pointerdown',e=>{
   if(!len())return;cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:lx(e),y:ly(e)});
   if(pts.size===2){const [p,q]=[...pts.values()];pinch={d:Math.hypot(p.x-q.x,p.y-q.y)||1,spp:S.spp,s:x2s((p.x+q.x)/2)};drag=null;return;}
   if(S.playing&&false)return;
   const x=lx(e),hit=window.matchMedia('(pointer:coarse)').matches?22:10;
+  if(S.lockA||S.lockB){let t=null;
+    if(hasSel()){const da=Math.abs(x-s2x(S.a)),db=Math.abs(x-s2x(S.b));if(!S.lockA&&da<hit&&da<=db)t='A';else if(!S.lockB&&db<hit)t='B';}
+    drag=t?{t}:{t:'pan',x0:x,vs0:S.vs,lk:1,moved:false};e.preventDefault();return;}
   if(hasSel()){const xa=s2x(S.a),xb=s2x(S.b);const da=Math.abs(x-xa),db=Math.abs(x-xb);
     if(da<hit&&da<=db)drag={t:'A'};else if(db<hit)drag={t:'B'};}
   if(!drag){drag=S.tool==='hand'?{t:'pan',x0:x,vs0:S.vs}:{t:'new',s0:x2s(x),x0:x,moved:false};}
@@ -1387,26 +1402,27 @@ cv.addEventListener('pointermove',e=>{
   if(pinch&&pts.size>=2){const [p,q]=[...pts.values()];const d=Math.hypot(p.x-q.x,p.y-q.y)||1,mx=(p.x+q.x)/2;
     S.spp=clamp(pinch.spp*pinch.d/d,0.02,Math.max(0.02,len()/CW));S.vs=pinch.s-mx*S.spp;clampView();paintAll(true);return;}
   if(!drag)return;
-  if(drag.t==='pan'){S.vs=clamp(drag.vs0-(x-drag.x0)*S.spp,0,maxVs());paintAll(true);return;}
+  if(drag.t==='pan'){if(drag.lk&&Math.abs(x-drag.x0)>4)drag.moved=true;S.vs=clamp(drag.vs0-(x-drag.x0)*S.spp,0,maxVs());paintAll(true);return;}
   const edge=()=>{
     if(x<24&&S.vs>0){S.vs=clamp(S.vs-S.spp*Math.max(2,(24-x)),0,maxVs());S.dirtyW=true;}
     else if(x>CW-24&&S.vs<maxVs()){S.vs=clamp(S.vs+S.spp*Math.max(2,(x-(CW-24))),0,maxVs());S.dirtyW=true;}
   };
   if(drag.t==='new'){if(!drag.moved&&Math.abs(x-drag.x0)>4)drag.moved=true;if(drag.moved){edge();setSel(drag.s0,x2s(x));}}
-  else if(drag.t==='A'){edge();setSel(x2s(x),S.b);if(S.a>S.b){drag.t='B';}}
-  else if(drag.t==='B'){edge();setSel(S.a,x2s(x));}
+  else if(drag.t==='A'){edge();setSel(S.lockB?Math.min(x2s(x),S.b):x2s(x),S.b);if(S.a>S.b){drag.t='B';}}
+  else if(drag.t==='B'){edge();setSel(S.a,S.lockA?Math.max(x2s(x),S.a):x2s(x));}
   if(drag&&(x<24||x>CW-24)){clearTimeout(edgeT);edgeT=setTimeout(()=>{if(drag&&pts.size)cv.dispatchEvent(new PointerEvent('pointermove',{pointerId:e.pointerId,clientX:e.clientX,clientY:e.clientY}));},30);}
 });
 function endPtr(e){
   if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(pts.size<2)pinch=null;
   if(drag&&pts.size===0){
+    if(drag.lk&&!drag.moved)lockToast();
     if(drag.t==='new'&&!drag.moved){S.cur=clamp(Math.round(drag.s0),0,len());S.a=S.b=S.cur;if(S.playing){stopPlay(true);play();}}
-    else if(drag.t==='new'||drag.t==='A'||drag.t==='B'){if(S.snap&&hasSel()){S.a=zc(S.a);S.b=zc(S.b);if(S.b<=S.a)S.b=Math.min(len(),S.a+1);S.cur=S.a;}}
+    else if(drag.t==='new'||drag.t==='A'||drag.t==='B'){if(S.snap&&hasSel()){if(!S.lockA)S.a=zc(S.a);if(!S.lockB)S.b=zc(S.b);if(S.b<=S.a)S.b=Math.min(len(),S.a+1);S.cur=S.a;}}
     drag=null;paintAll();updInfo();updSelPeak();
   }
 }
 cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
-cv.addEventListener('dblclick',()=>{if(len()){setSel(0,len());}});
+cv.addEventListener('dblclick',()=>{if(len()&&!S.lockA&&!S.lockB){setSel(0,len());}});
 cv.addEventListener('wheel',e=>{
   if(!len())return;e.preventDefault();
   if(e.ctrlKey||e.metaKey){zoomAt(e.deltaY>0?1.18:1/1.18,lx(e));}
@@ -1418,7 +1434,7 @@ function ovMove(e){const r=ov.getBoundingClientRect(),n=len();if(!n)return;const
 ov.addEventListener('pointerdown',e=>{ov.setPointerCapture(e.pointerId);ovDrag=true;ovMove(e);});
 ov.addEventListener('pointermove',e=>{if(ovDrag)ovMove(e)});
 ov.addEventListener('pointerup',()=>ovDrag=false);ov.addEventListener('pointercancel',()=>ovDrag=false);
-$('#mini').addEventListener('pointerdown',e=>{const r=e.target.getBoundingClientRect(),n=len();if(!n)return;S.cur=Math.round((e.clientX-r.left)/r.width*n);S.a=S.b=S.cur;if(S.playing){stopPlay(true);play();}paintAll();updInfo();});
+$('#mini').addEventListener('pointerdown',e=>{const r=e.target.getBoundingClientRect(),n=len();if(!n)return;if(S.lockA||S.lockB){lockToast();return;}S.cur=Math.round((e.clientX-r.left)/r.width*n);S.a=S.b=S.cur;if(S.playing){stopPlay(true);play();}paintAll();updInfo();});
 
 /* ====================== historial y edición ====================== */
 function pushHist(label){
@@ -1866,7 +1882,7 @@ $('#bFxApply').onclick=async()=>{
 const MFIELDS=[['title','Título'],['artist','Artista'],['album','Álbum'],['albumArtist','Artista del álbum'],['year','Año'],['genre','Género'],['track','Pista (n o n/total)'],['disc','Disco (n o n/total)'],['composer','Compositor'],['bpm','BPM'],['comment','Comentario']];
 const blankMeta=()=>Object.fromEntries(MFIELDS.map(f=>[f[0],'']));
 const EM={on:true,f:Object.assign(blankMeta(),LS.get('meta_e',{}))};                       /* exportación individual */
-const BM={on:true,auto:true,f:Object.assign(blankMeta(),{title:'{nombre}'},LS.get('meta_b',{}))};   /* lote */
+const BM={on:true,auto:true,f:Object.assign(blankMeta(),LS.get('meta_b',{}))};   /* lote */
 const COVER={bytes:null,url:null};
 function saveMeta(){const e={...EM.f};e.title='';e.track='';LS.set('meta_e',e);const b={...BM.f};b.track='';LS.set('meta_b',b);}
 const mcat=a=>{let n=0;for(const x of a)n+=x.length;const o=new Uint8Array(n);let p=0;for(const x of a){o.set(x,p);p+=x.length;}return o;};
@@ -1964,9 +1980,9 @@ function initMetaUI(){
   const bh=$('#metaB');const bRender=()=>{bh.innerHTML='';const top=el('div');top.className='row';top.innerHTML='<label class="chk" style="margin:0"><input type="checkbox" id="metaBOn">Escribir metadatos y portada en todos los archivos</label>';bh.appendChild(top);
     const c=$('#metaBOn',bh);c.checked=BM.on;const body=el('div');body.className='mbody';bh.appendChild(body);const draw=()=>{body.style.display=BM.on?'grid':'none';};draw();c.onchange=()=>{BM.on=c.checked;draw();};
     const l=el('div');body.append(coverBox(),l);
-    metaGrid(l,BM.f,{onchange:saveMeta,skip:['track'],labels:{title:'Título (plantilla)'},ph:{title:'{nombre}  ·  {n}'}});
+    metaGrid(l,BM.f,{onchange:saveMeta,skip:['track'],labels:{title:'Título (vacío = nombre del archivo)'},ph:{title:'vacío = nombre original · admite {nombre} y {n}'}});
     const a=el('label');a.className='chk';a.innerHTML='<input type="checkbox" id="metaAuto">Numerar las pistas por el orden de la lista (1/N, 2/N…)';l.appendChild(a);const ac=$('input',a);ac.checked=BM.auto;ac.onchange=()=>{BM.auto=ac.checked;renderBatch();};
-    const h=el('div');h.className='hint';h.textContent='La plantilla del título admite {nombre} (nombre del archivo) y {n} (posición). El orden de la lista (▲▼) es el orden de las pistas. Con ✎ en cada archivo puedes cambiar sus datos individuales; lo que dejes vacío se hereda de aquí.';l.appendChild(h);};
+    const h=el('div');h.className='hint';h.textContent='Si el título está vacío, cada archivo usa su nombre original; si escribes uno, se usa ese (admite {nombre} y {n} para la posición). Los archivos se renombran solos como «NN - Título». El orden de la lista (▲▼) es el orden de las pistas. Con ✎ en cada archivo puedes cambiar sus datos individuales; lo que dejes vacío se hereda de aquí.';l.appendChild(h);};
   window.__metaBRender=bRender;bRender();
 }
 /* metadatos efectivos */
@@ -1984,6 +2000,8 @@ function effMeta(it,idx,N){
 function metaForBatch(it,idx,N){return BM.on?effMeta(it,idx,N):null;}
 /* nombre de archivo del lote: «NN - Título» (NN = pista, con ceros a la izquierda) */
 const cleanName=s=>(s||'').replace(/[\u0000-\u001f"*?<>]+/g,'').replace(/\s*:\s*/g,' - ').replace(/\s*[\\/|]\s*/g,'-').replace(/\s+/g,' ').trim().replace(/^[.\- ]+/,'').slice(0,120);
+/* «NN - base» si hay número de pista (n o n/N) */
+function numberedBase(base,track){const p=String(track||'').split('/'),tn=parseInt(p[0],10);if(!(tn>0))return base;const tt=parseInt(p[1],10)||0;return String(tn).padStart(Math.max(2,String(Math.max(tn,tt)).length),'0')+' - '+base;}
 function batchFileBase(it,idx,N){
   const m=effMeta(it,idx,N);const clean=cleanName;
   const title=clean(m.title)||clean(baseName(it.f.name))||'audio';
@@ -2059,7 +2077,7 @@ function doSaveProject(){
 function saveProjectFile(nm,light){
   const n=len(),fx=JSON.parse(JSON.stringify(FX));delete fx._mod;
   const cover=COVER.bytes?new Uint8Array(COVER.bytes):null;
-  const hdr={v:1,app:'SampledHead Editor',ver:(window.__VER||''),name:S.name,sr:S.sr,n,bits:light?16:32,a:S.a,b:S.b,cur:S.cur,ch:S.ch,
+  const hdr={v:1,lockA:!!S.lockA,lockB:!!S.lockB,app:'SampledHead Editor',ver:(window.__VER||''),name:S.name,sr:S.sr,n,bits:light?16:32,a:S.a,b:S.b,cur:S.cur,ch:S.ch,
     fx,meta:EM.f,metaOn:EM.on,coverLen:cover?cover.length:0,saved:new Date().toISOString()};
   const hb=new TextEncoder().encode(JSON.stringify(hdr));
   const head=new Uint8Array(12+hb.length+((4-(12+hb.length)%4)%4));
@@ -2095,6 +2113,7 @@ async function openProjectFile(file){
     if(h.meta){Object.assign(EM.f,h.meta);if(typeof h.metaOn==='boolean')EM.on=h.metaOn;}
     if(h.coverLen>0&&off+h.coverLen<=ab.byteLength)setCover(new Uint8Array(ab.slice(off,off+h.coverLen)));
     if(window.__metaERender)__metaERender();
+    if('lockA' in h)setLock(h.lockA,h.lockB,true);else if(typeof h.lock==='boolean')setLock(h.lock,h.lock,true);
     commit('Abrir proyecto');fitAll();showTab('edit');
     toast('Proyecto abierto: '+(S.name||file.name)+' · '+fmtT(n,S.sr,1)+' s (Deshacer recupera el anterior)');
   }catch(e){console.error(e);toast(e.message||'No se pudo abrir el proyecto',true);}
@@ -2105,6 +2124,35 @@ $('#bOpen').onclick=()=>$('#fileP').click();
 $('#fileP').onchange=e=>{const f=e.target.files[0];e.target.value='';openProjectFile(f);};
 window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==='s'){e.preventDefault();doSaveProject();}});
 window.__openProject=openProjectFile;
+
+/* --- A lote: manda el audio del editor a la pestaña Lote, con o sin cadena de máster --- */
+function doToBatch(){
+  if(S.busy||!needAudio())return;
+  openSheet('Enviar al lote',bd=>{
+    bd.innerHTML='<label class="hint">Qué enviar</label><select id="tbSrc" style="width:100%"></select>'+
+     '<label class="hint" style="margin-top:8px">Cadena de máster</label><select id="tbFx" style="width:100%"><option value="1">Con la cadena de máster actual'+(fxActive()?'':' (ahora no hay ningún módulo activo)')+'</option><option value="0">Sin cadena de máster</option></select>'+
+     '<div class="hint" style="margin-top:8px">Se añade al final de la lista del Lote como un archivo más. Con cadena, se guarda una copia de los ajustes de máster de este momento. El título de los metadatos de Exportar, si lo has rellenado, pasa a ser el de este archivo.</div>';
+    const s=$('#tbSrc',bd);
+    const o1=document.createElement('option');o1.value='all';o1.textContent='Todo el proyecto ('+fmtT(len(),S.sr,1)+' s)';s.appendChild(o1);
+    if(hasSel()){const o=document.createElement('option');o.value='sel';o.textContent='Selección ('+fmtT(S.b-S.a,S.sr,1)+' s)';s.appendChild(o);}
+    $('#tbFx',bd).value=(S.fxOn&&fxActive())?'1':'0';
+  },[{t:'Cancelar'},{t:'Enviar al lote',pri:1,f:async()=>{
+    const sel=$('#tbSrc').value==='sel',withFx=$('#tbFx').value==='1';
+    let L,R;if(sel){const x=extractSource(false);L=x.L;R=x.R;}else{L=S.L;R=S.R;}
+    const base=(baseName(S.name)||'audio')+(sel?' (selección)':'');
+    const f=new File([encodeWav([L,R],S.sr,32,false)],base+'.wav',{type:'audio/wav'});
+    const params=withFx?Object.assign(dspParams(),{bypass:0}):null;
+    const item={f,st:'wait',msg:'En espera · '+(withFx?'con cadena':'sin cadena'),fxo:{use:withFx,params}};
+    const t=(EM.on?(EM.f.title||''):'').trim();if(t)item.meta={title:t};
+    BAT.items.push(item);renderBatch();showTab('bat');
+    toast('Enviado al lote: '+base+(withFx?' · con cadena':' · sin cadena'));}}]);
+}
+ACT.tobatch=doToBatch;
+
+/* --- bloquear puntos (selección y cursor) --- */
+$('#bLockA').onclick=()=>setLock(!S.lockA,S.lockB);
+$('#bLockB').onclick=()=>setLock(S.lockA,!S.lockB);
+{const o=LS.get('lock',0)==1;setLock(LS.get('lockA',o?1:0)==1,LS.get('lockB',o?1:0)==1,true);}
 
 /* ====================== ocupado / progreso ====================== */
 let busyEl=null;
@@ -2207,11 +2255,11 @@ function syncExpUI(){
 $('#expSr').onchange=e=>{EXP.sr=+e.target.value;syncExpUI();};$('#expFx').onchange=e=>{EXP.fx=e.target.checked;syncExpUI();};$('#expNorm').onchange=e=>{EXP.norm=e.target.checked;syncExpUI();};
 $('#expNormV').onchange=e=>{EXP.normV=clamp(+e.target.value||-1,-30,0);syncExpUI();};$('#expDither').onchange=e=>{EXP.dither=e.target.checked;syncExpUI();};
 $('#expName').oninput=e=>{e.target.dataset.user=1;};
-async function exportCore(Ls,Rs,ssr,a,b,sel,pfx){ /* devuelve {chans, sr, suf} */
-  pfx=pfx||'';let L,R;const useFx=EXP.fx&&S.fxOn&&fxActive();
+async function exportCore(Ls,Rs,ssr,a,b,sel,pfx,fxo){ /* devuelve {chans, sr, suf}; fxo={use,params} fija la cadena de un elemento del lote */
+  pfx=pfx||'';let L,R;const useFx=fxo?!!fxo.use:(EXP.fx&&S.fxOn&&fxActive());
   if(useFx){
     setBusy(pfx+'Procesando con la cadena de máster…',0);
-    const o=await renderFx(Ls,Rs,a,b,ssr,dspParams(),p=>setBusy(pfx+'Procesando con la cadena de máster…',p));L=o[0];R=o[1];
+    const o=await renderFx(Ls,Rs,a,b,ssr,(fxo&&fxo.params)||dspParams(),p=>setBusy(pfx+'Procesando con la cadena de máster…',p));L=o[0];R=o[1];
   }else{L=Ls.slice(a,b);R=Rs.slice(a,b);}
   let chans,suf='';
   if(EXP.chan==='st')chans=[L,R];else if(EXP.chan==='L'){chans=[L];suf='_L';}else if(EXP.chan==='R'){chans=[R];suf='_R';}
@@ -2236,7 +2284,9 @@ $('#bExport').onclick=async()=>{
   try{
     if(EXP.fmt==='mp3'){setBusy('Preparando el codificador MP3…',0.02);if(!(await ensureLame())){setBusy(null);toast('No se pudo cargar lame.min.js. Conéctate una vez a internet o copia lame.min.js junto a index.html.',true);msg.textContent='MP3 no disponible: falta lame.min.js. Mientras tanto puedes exportar en WAV.';return;}}
     const ex=await buildExport();const blob=await encodeEx(ex,'',metaForExport());
-    const nm=(($('#expName').value.trim()||baseName(S.name)||'audio').replace(/[\\/:*?"<>|]+/g,'_'))+ex.suf+'.'+EXP.fmt;
+    const en=$('#expName'),auto=!en.dataset.user,mt=(EM.on&&auto)?cleanName(EM.f.title):'';
+    let nb=(mt||en.value.trim()||baseName(S.name)||'audio').replace(/[\\/:*?"<>|]+/g,'_');if(EM.on&&auto)nb=numberedBase(nb,EM.f.track);
+    const nm=nb+ex.suf+'.'+EXP.fmt;
     lastBlob=blob;lastName=nm;setBusy(null);saveBlob(blob,nm);
     msg.innerHTML='Listo: <b>'+nm+'</b> ('+(blob.size/1048576).toFixed(2)+' MB)';toast('Exportado: '+nm);
     if(navigator.canShare&&navigator.canShare({files:[new File([blob],nm,{type:blob.type})]}))$('#bShare').style.display='';
@@ -2334,9 +2384,9 @@ async function runBatch(){
       try{
         setBusy(pfx+'Leyendo…',0.02);const ab=await it.f.arrayBuffer();
         setBusy(pfx+'Decodificando…',0.05);const buf=await decodeAB(ab,it.f.name);const o=bufToArrays(buf);
-        const ex=await exportCore(o.L,o.R,o.sr,0,o.L.length,false,pfx);o.L=o.R=null;
+        const ex=await exportCore(o.L,o.R,o.sr,0,o.L.length,false,pfx,it.fxo);o.L=o.R=null;
         const blob=await encodeEx(ex,pfx,metaForBatch(it,i,N));
-        let nm=$('#batRename').checked?batchFileBase(it,i,N):baseName(it.f.name)+ex.suf,k=1,full=nm+'.'+EXP.fmt;while(used.has(full.toLowerCase())){k++;full=nm+'_'+k+'.'+EXP.fmt;}used.add(full.toLowerCase());
+        let nm=batchFileBase(it,i,N),k=1,full=nm+'.'+EXP.fmt;while(used.has(full.toLowerCase())){k++;full=nm+'_'+k+'.'+EXP.fmt;}used.add(full.toLowerCase());
         BAT.results.push({name:full,blob});it.st='ok';it.msg='Listo · '+fmtSize(blob.size);
       }catch(e){console.error(e);bad++;it.st='err';it.msg='Error: '+(e.message||e).toString().slice(0,60);}
       renderBatch();
