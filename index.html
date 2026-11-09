@@ -273,8 +273,15 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .strk .btn.sm{min-width:30px;padding:2px 8px}.strk .btn.on{background:var(--acc);color:#04120f;border-color:transparent}
 .strk .sm_.on{background:var(--warn)}
 .strk .sv{display:flex;align-items:center;gap:6px}.strk .sv input{flex:1;min-width:0}.strk .sx{font-size:11px;color:var(--mut);width:34px;text-align:right}
-.strk .sw{grid-column:1/-1;position:relative;height:44px;background:var(--bg);border-radius:6px;overflow:hidden}
+.strk .sw{width:auto;border:0;grid-column:1/-1;position:relative;height:44px;background:var(--bg);border-radius:6px;overflow:hidden}
 .strk .sw canvas{width:100%;height:100%;display:block;cursor:pointer}.strk .ph{position:absolute;top:0;bottom:0;width:2px;background:#fff;pointer-events:none;left:0}
+@media(max-width:520px){#tabs{overflow-x:auto;scrollbar-width:none}#tabs button{flex:0 0 auto;padding:0 12px}}
+#guidebody details{border:1px solid var(--line);border-radius:10px;background:var(--bg2);margin-bottom:6px;padding:0 10px}
+#guidebody summary{cursor:pointer;font-weight:700;padding:9px 0;font-size:13.5px}
+#guidebody ul,#guidebody ol{margin:4px 0 8px 18px;padding:0;font-size:13px;line-height:1.5}
+#guidebody li{margin-bottom:4px}#guidebody p{font-size:13px;line-height:1.5;margin:4px 0 8px}
+#guidebody table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px}#guidebody td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:top}#guidebody td:first-child{font-weight:700;white-space:nowrap}
+#guidebody .tip{color:var(--mut)}
 </style></head><body data-tab="edit">
 <div id="app">
 <header id="top">
@@ -284,6 +291,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   <button class="ib" id="bOpen" title="Abrir proyecto (.shproj)" aria-label="Abrir proyecto">&#128194;</button>
   <button class="ib" id="bSave" title="Guardar proyecto (Ctrl+S)" aria-label="Guardar proyecto">&#128190;</button>
   <input type="file" id="fileP" accept=".shproj" hidden>
+  <button class="ib" id="bLang" title="Idioma / Language" aria-label="Idioma / Language">ES</button>
+  <button class="ib" id="bHelp" title="Guía de uso" aria-label="Guía de uso">?</button>
   <button class="ib" id="bUndo" title="Deshacer (Ctrl+Z)" aria-label="Deshacer" disabled>&#8630;</button>
   <button class="ib" id="bRedo" title="Rehacer (Ctrl+Mayús+Z)" aria-label="Rehacer" disabled>&#8631;</button>
 </header>
@@ -293,6 +302,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   <button data-t="rec">Grabar</button>
   <button data-t="imp">Importar</button>
   <button data-t="stm">Stems</button>
+  <button data-t="ana">Análisis</button>
+  <button data-t="cho">Acordes</button>
   <button data-t="exp">Exportar</button>
   <button data-t="bat">Lote</button>
 </nav>
@@ -336,7 +347,13 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       <button class="btn" data-a="paste" title="Pegar en el cursor (inserta y desplaza el resto); si hay selección, la sustituye (Ctrl+V)"><i>&#9112;</i><span id="pasteLbl">Pegar</span></button>
       <button class="btn" data-a="tobatch" title="Enviar el audio (o la selección) a la pestaña Lote, con o sin cadena de máster"><i>&#10138;</i>A lote</button>
       <button class="btn" data-a="stems" title="Separar la voz, la batería, el bajo… con IA (pestaña Stems)"><i>&#9776;</i>Stems</button>
+      <button class="btn" data-a="tosampler" title="Mandar el audio (o la selección) al sampler, con o sin cadena de máster"><i>&#9654;</i>Al sampler</button>
+      <button class="btn" data-a="fromsampler" title="Recoger el audio que haya mandado el sampler"><i>&#9664;</i>Del sampler</button>
       <button class="btn" data-a="extract" title="Sacar la selección o el portapapeles: proyecto nuevo o archivo WAV"><i>&#8689;</i>Extraer</button>
+      <button class="btn" data-a="marker" title="Poner un marcador en el cursor (M)"><i>&#9873;</i>Marcador</button>
+      <button class="btn" data-a="markers" title="Gestionar marcadores y exportar cada sección como archivo"><i>&#9776;</i>Marcadores</button>
+      <button class="btn" data-a="noise" title="Quitar ruido constante (soplido, zumbido)"><i>&#8776;</i>Quitar ruido</button>
+      <button class="btn" data-a="silences" title="Acortar o quitar los silencios largos"><i>&#8943;</i>Quitar silencios</button>
       <button class="btn" data-a="silence"><i>&#9632;</i>Silenciar</button>
       <button class="btn" data-a="fadein"><i>&#8599;</i>Fundido ent.</button>
       <button class="btn" data-a="fadeout"><i>&#8600;</i>Fundido sal.</button>
@@ -388,7 +405,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
     <div><span class="kbd">Espacio</span> reproducir / parar &nbsp; <span class="kbd">Esc</span> parar</div>
     <div><span class="kbd">Ctrl</span>+<span class="kbd">Z</span> deshacer &nbsp; <span class="kbd">Ctrl</span>+<span class="kbd">Mayús</span>+<span class="kbd">Z</span> rehacer</div>
     <div><span class="kbd">Ctrl</span>+<span class="kbd">X</span>/<span class="kbd">C</span>/<span class="kbd">V</span> cortar / copiar / pegar &nbsp; <span class="kbd">Supr</span> borrar</div>
-    <div><span class="kbd">Ctrl</span>+<span class="kbd">A</span> todo &nbsp; <span class="kbd">I</span>/<span class="kbd">O</span> inicio / fin en el cursor &nbsp; <span class="kbd">T</span> recortar</div>
+    <div><span class="kbd">M</span> marcador &nbsp; <span class="kbd">Ctrl</span>+<span class="kbd">A</span> todo &nbsp; <span class="kbd">I</span>/<span class="kbd">O</span> inicio / fin en el cursor &nbsp; <span class="kbd">T</span> recortar</div>
     <div><span class="kbd">+</span>/<span class="kbd">&minus;</span> zoom &nbsp; <span class="kbd">L</span> bucle &nbsp; <span class="kbd">B</span> comparar máster &nbsp; <span class="kbd">Inicio</span>/<span class="kbd">Fin</span></div>
     <div>Rueda: desplazar &nbsp; <span class="kbd">Ctrl</span>+rueda o pellizco: zoom</div>
    </div>
@@ -504,7 +521,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
     <label class="hint" style="margin-top:8px">Qué separar</label>
     <select id="stmMode" style="width:100%"><option value="all">Los 6 stems (voz, batería, bajo, guitarra, piano y otros)</option><option value="vi">Voz + instrumental</option><option value="custom">Elegir pistas…</option></select>
     <div id="stmChecks" style="margin-top:6px"></div>
-    <div class="hint" style="margin-top:8px">Separa todo el proyecto. La IA siempre calcula los 6 stems; elegir menos reduce lo que se guarda en memoria y lo que ves en el mezclador. Tarda varias veces la duración del audio (más en el móvil): deja la pantalla encendida.</div>
+    <label class="hint" style="margin-top:8px">Qué parte</label><select id="stmPart" style="width:100%"></select>
+    <div class="hint" style="margin-top:8px">Separa todo el proyecto o solo la selección (más rápido y ligero). La IA siempre calcula los 6 stems; elegir menos reduce lo que se guarda en memoria y lo que ves en el mezclador. Tarda varias veces la duración del audio (más en el móvil): deja la pantalla encendida.</div>
     <label class="chk" style="margin-top:8px"><input type="checkbox" id="stmLow"> <span>Modo de poca memoria (recomendado en móvil; algo más lento)</span></label>
     <div class="hint" id="stmErr" style="display:none;margin-top:8px;color:var(--bad,#ff6b6b);white-space:pre-wrap;word-break:break-word"></div>
     <div class="hint" id="stmModel" style="margin-top:8px"></div>
@@ -516,8 +534,52 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
     <div class="row"><button class="btn pri" id="stmPlay">&#9654; Reproducir</button><button class="btn" id="stmStop">&#9632;</button><span class="xs" id="stmTime" style="margin-left:auto"></span></div>
     <input type="range" id="stmPos" min="0" max="1" value="0" style="width:100%;margin-top:8px" aria-label="Posición">
     <div id="stmList" style="margin-top:8px"></div>
+    <div class="hint" id="stmSelI" style="margin-top:6px"></div>
+    <div class="row" style="margin-top:6px;flex-wrap:wrap"><button class="btn" id="stmTrim" title="Conserva solo el trozo seleccionado en todas las pistas a la vez">Recortar todas</button><button class="btn" id="stmDel" title="Quita el trozo seleccionado de todas las pistas a la vez">Borrar trozo</button><button class="btn" id="stmUndoCut">Deshacer corte</button></div>
     <div class="row" style="margin-top:8px;flex-wrap:wrap"><button class="btn" id="stmToEd" title="Renderiza lo que suena (pistas no silenciadas, con su volumen) como proyecto del editor">Mezcla al editor</button><button class="btn" id="stmExp">Exportar stems</button><button class="btn" id="stmBat">Al lote</button><button class="btn" id="stmClear">Quitar stems</button></div>
     <div class="hint" style="margin-top:6px">M = silenciar · S = solo. Suenan a través de la cadena de máster. Toca una onda para ir a ese punto.</div>
+  </div>
+ </div>
+</section>
+<section class="panel" id="pAna">
+ <div class="batgrid">
+  <div class="card">
+    <h3 style="margin-bottom:8px">Tempo y tonalidad</h3>
+    <label class="hint">Analizar</label><select id="anSrc" style="width:100%"></select>
+    <div class="row" style="margin-top:8px"><button class="btn pri grow" id="anGo">Analizar</button><button class="btn" id="anHalf" title="Dividir el tempo entre 2">&divide;2</button><button class="btn" id="anDbl" title="Multiplicar el tempo por 2">&times;2</button></div>
+    <div id="anRes" style="margin-top:10px"></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="anMeta">Escribir en los metadatos</button></div>
+    <div class="hint" style="margin-top:6px">Se guarda como BPM y Tonalidad en los metadatos de exportación (pestaña Exportar).</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:8px">Espectrograma</h3>
+    <label class="hint">Fuente</label><select id="spSrc" style="width:100%"></select>
+    <div class="row" style="margin-top:8px"><button class="btn pri grow" id="spGo">Generar</button></div>
+    <div id="spWrap" style="margin-top:8px;overflow-x:auto"><canvas id="spCv" width="300" height="10" style="max-width:100%;border-radius:8px;background:#000"></canvas></div>
+    <div class="hint" style="margin-top:6px">Frecuencia en vertical (escala logarítmica), tiempo en horizontal; más brillo = más fuerte.</div>
+  </div>
+ </div>
+</section>
+<section class="panel" id="pCho">
+ <div class="batgrid">
+  <div class="card">
+    <h3 style="margin-bottom:8px">Acordes</h3>
+    <label class="hint">Analizar</label><select id="chSrc" style="width:100%"></select>
+    <label class="hint" style="margin-top:6px">Sensibilidad</label><select id="chSens" style="width:100%"><option value="norm">Normal</option><option value="soft">Suave (menos cambios)</option><option value="fine">Detallada (más cambios)</option></select>
+    <div class="row" style="margin-top:8px"><button class="btn pri grow" id="chGo">Detectar acordes</button></div>
+    <div class="hint" id="chInfo" style="margin-top:8px"></div>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap"><button class="btn" id="chExp">Exportar lista (.txt)</button><button class="btn" id="chMeta">Tonalidad y BPM a metadatos</button></div>
+    <div class="hint" style="margin-top:6px">Detección aproximada: va mejor con música armónica clara; si hay batería fuerte, analiza el stem «Otros», «Piano» o «Guitarra».</div>
+  </div>
+  <div class="card">
+    <div class="row"><button class="btn" id="chPlay">&#9654;/&#10074;&#10074;</button><button class="btn" id="chStop">&#9632;</button></div>
+    <div id="chTlW" style="overflow-x:auto;margin-top:8px"><canvas id="chTl" height="64" style="display:block;cursor:pointer"></canvas></div>
+    <div id="chName" style="font-size:28px;font-weight:700;margin-top:10px">—</div>
+    <div class="hint" id="chNotes"></div>
+    <div id="chView" style="margin-top:8px"></div>
+    <div class="row" id="chTunRow" style="margin-top:8px;flex-wrap:wrap"><select id="chTune" class="grow"></select><input type="text" id="chTuneC" placeholder="Ej.: D A D G B E" style="display:none;width:150px"></div>
+    <div style="margin-top:8px"><canvas id="chViz" style="display:block;max-width:100%"></canvas></div>
+    <div class="row" id="chVar" style="margin-top:6px"><button class="btn sm">Otra digitación</button><span class="xs mut" id="chVoc"></span></div>
   </div>
  </div>
 </section>
@@ -544,7 +606,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   <div class="card">
     <h3 style="margin-bottom:8px">Procesado</h3>
     <label class="chk"><input type="checkbox" id="expFx">Aplicar la cadena de máster al exportar</label>
-    <label class="chk"><input type="checkbox" id="expNorm">Normalizar el pico a</label>
+    <label class="chk"><input type="checkbox" id="expNorm">Normalizar</label>
+    <div class="row" style="margin-left:27px;margin-bottom:6px"><select id="expNormM"><option value="peak">Por pico</option><option value="lufs">Por volumen (LUFS)</option></select></div>
+    <div class="row" id="expLufsRow" style="margin-left:27px"><span class="sm mut">Volumen objetivo</span><input type="number" id="expLufs" value="-14" step="0.5" min="-40" max="-5" style="width:84px"> <span class="sm mut">LUFS (pico ≤ −1 dBFS)</span></div>
     <div class="row" style="margin-left:27px"><input type="number" id="expNormV" value="-1" step="0.1" min="-30" max="0" style="width:84px"> <span class="sm mut">dBFS</span></div>
     <label class="chk" id="rowDither"><input type="checkbox" id="expDither" checked>Tramado (dither) en 16 bits</label>
   </div>
@@ -616,6 +680,192 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <div class="sheet" id="sheet"><div class="hd"><h2 id="shT"></h2><button class="ib" id="shX" aria-label="Cerrar">&#10005;</button></div><div class="bd" id="shB"></div><div class="ft" id="shF"></div></div>
 <div id="toast"></div>
 
+<template id="guide-es"><details open><summary>1. Primeros pasos</summary>
+<ol><li>En <b>Importar</b> carga un archivo de audio o vídeo, pega un enlace directo, o graba con el micrófono en <b>Grabar</b>.</li>
+<li>En <b>Editor</b> arrastra sobre la onda para seleccionar y usa las herramientas (cortar, pegar, fundidos, normalizar…).</li>
+<li>En <b>Máster</b> elige un preset o ajusta la cadena (EQ, compresor, multibanda, exciter, cinta, imager, maximizer).</li>
+<li>En <b>Exportar</b> elige formato y guarda. Con <b>💾</b> guardas todo el proyecto (.shproj) para seguir otro día.</li></ol>
+<p class="tip">Todo se hace en tu dispositivo: el audio no se sube a ningún servidor. Funciona sin conexión (salvo la primera descarga del modelo de Stems).</p>
+</details>
+<details><summary>2. Las pestañas</summary>
+<table><tbody>
+<tr><td>Editor</td><td>Onda, selección, herramientas de edición, marcadores.</td></tr>
+<tr><td>Máster</td><td>Cadena de masterización en tiempo real, medidores, presets (391 de Ozone + 33 de estilo + «Mis presets»).</td></tr>
+<tr><td>Grabar</td><td>Grabadora (estéreo/mono, elegir entrada, escuchar mientras grabas).</td></tr>
+<tr><td>Importar</td><td>Archivo, vídeo (extrae el audio), enlace directo.</td></tr>
+<tr><td>Stems</td><td>Separa voz, batería, bajo, guitarra, piano y otros con IA y mézclalos.</td></tr>
+<tr><td>Análisis</td><td>Tempo, tonalidad y espectrograma.</td></tr>
+<tr><td>Acordes</td><td>Detecta los acordes y los muestra en piano, guitarra o bajo.</td></tr>
+<tr><td>Exportar</td><td>WAV/MP3, normalización, metadatos y portada.</td></tr>
+<tr><td>Lote</td><td>Procesa y exporta muchos archivos con la misma cadena.</td></tr></tbody></table>
+</details>
+<details><summary>3. Seleccionar y editar</summary>
+<ul><li><b>Seleccionar</b>: arrastra sobre la onda (herramienta «Selec.»); con «Mano» arrastras para desplazar. Zoom con +/−, rueda con Ctrl o pellizco.</li>
+<li><b>Cortar</b> copia la selección, la quita y une los extremos; <b>Borrar</b> lo mismo sin copiar; <b>Copiar</b>; <b>Pegar</b> inserta en el cursor (o sustituye la selección); <b>Recortar</b> conserva solo la selección. Todo se puede deshacer (hasta 40 pasos).</li>
+<li>Cortar, pegar y recortar solo funcionan en modo de canales <b>L+R</b> (en L o R cambiaría la duración de un solo canal).</li>
+<li><b>Extraer</b> saca un trozo (o el portapapeles) como proyecto nuevo o como WAV.</li>
+<li>Fundidos, invertir, fase, normalizar (pico o LUFS), ganancia, quitar DC, canales, insertar silencio, silenciar.</li>
+<li><b>Cruce 0</b> ajusta los extremos de la selección al cruce por cero (sin clics).</li>
+<li><b>Bloquear Inicio / Fin</b>: evita mover un extremo de la selección por accidente (solo afecta al ratón/táctil).</li></ul>
+</details>
+<details><summary>4. Marcadores</summary>
+<ul><li>Coloca el cursor y pulsa <b>Marcador</b> (o la tecla <b>M</b>). Aparece una bandera en la onda.</li>
+<li><b>Marcadores</b> abre la lista: renombrar, ir al marcador, borrar y <b>Exportar secciones</b>: cada tramo entre marcadores se guarda como archivo (en un ZIP) con los ajustes de Exportar.</li>
+<li>Los marcadores se mueven solos al cortar, borrar, pegar o recortar, se pueden deshacer y se guardan en el proyecto.</li></ul>
+</details>
+<details><summary>5. Quitar ruido y silencios</summary>
+<ul><li><b>Quitar ruido</b>: reduce ruido constante (soplido, zumbido, ventilador). Elige aprender el ruido de la selección (un trozo donde solo se oiga el ruido, ≥ 0,3 s) o automático. Empieza con 10–15 dB; más puede sonar «acuoso».</li>
+<li><b>Quitar silencios</b>: acorta los silencios largos. Ajusta el umbral, la duración mínima y cuánto dejar de cada silencio; te dice cuántos encuentra antes de aplicar.</li></ul>
+</details>
+<details><summary>6. Máster</summary>
+<ul><li>La cadena suena en tiempo real. <b>Máster ON/OFF</b> y la tecla <b>B</b> comparan con el audio sin procesar.</li>
+<li><b>Aplicar al audio</b> renderiza la cadena sobre el audio (o la selección); se puede deshacer, y deja la cadena en vivo en OFF para no duplicarla.</li>
+<li><b>Guardar mío</b> guarda tu cadena como preset propio con nombre («Mis presets»).</li>
+<li>Medidores de pico, LUFS, reducción de ganancia y fase; el botón «Medir pico y LUFS» mide la selección.</li></ul>
+</details>
+<details><summary>7. Stems (separación con IA)</summary>
+<ul><li>Elige <b>qué parte</b> (todo el proyecto o solo la selección) y <b>qué separar</b>: los 6 stems, voz + instrumental o pistas concretas (con «Resto» opcional).</li>
+<li>La primera vez se descarga el modelo (≈ 136 MB) y queda guardado para usarlo sin conexión. Es lento (varias veces la duración del audio) y usa mucha memoria: en el móvil activa el <b>Modo de poca memoria</b> y deja la pantalla encendida.</li>
+<li><b>Mezclador</b>: M = silenciar, S = solo, volumen por pista. Arrastra sobre una onda para seleccionar un trozo y usa <b>Recortar todas</b> / <b>Borrar trozo</b> (se aplican a todas las pistas; «Deshacer corte»).</li>
+<li><b>Mezcla al editor</b> pasa lo que suena al editor (o sustituye la parte separada). <b>Exportar stems</b> y <b>Al lote</b>. Los stems se guardan en el proyecto.</li></ul>
+</details>
+<details><summary>8. Análisis y Acordes</summary>
+<ul><li><b>Análisis</b>: tempo (BPM; usa ÷2 / ×2 si sale al doble o a la mitad) y tonalidad de todo, la selección o un stem; «Escribir en los metadatos» los guarda como BPM y Tonalidad. El <b>espectrograma</b> muestra frecuencia (escala logarítmica) y tiempo.</li>
+<li><b>Acordes</b>: pulsa «Detectar acordes» (sensibilidad suave/normal/detallada). La línea de tiempo se puede tocar para saltar y sigue la reproducción. Elige <b>Piano</b>, <b>Guitarra</b> o <b>Bajo</b> para verlo dibujado.</li>
+<li>La <b>afinación</b> es seleccionable (estándar, Drop D, DADGAD, Open D/G/E, medio tono o un tono abajo, 7 cuerdas, bajo de 4/5/6 cuerdas o personalizada escribiendo las notas, p. ej. <i>D A D G B E</i>). Las digitaciones se calculan para cualquier afinación y «Otra digitación» muestra alternativas.</li>
+<li><b>Exportar lista</b> descarga los acordes con sus tiempos en un .txt.</li>
+<li>La detección es aproximada: va mejor con música armónica clara; con batería fuerte analiza el stem «Otros», «Piano» o «Guitarra».</li></ul>
+</details>
+<details><summary>9. Exportar</summary>
+<ul><li>Formato WAV (16/24/32 float) o MP3 (128–320 kbps), todo o solo la selección, estéreo / L / R / mono, con o sin cadena de máster, remuestreo y tramado (dither).</li>
+<li><b>Normalizar</b>: por pico (dBFS) o por volumen (<b>LUFS</b>, p. ej. −14), con el pico limitado a −1 dBFS.</li>
+<li><b>Metadatos y portada</b>: título, artista, álbum, año, género, pista, disco, compositor, BPM, tonalidad, comentario y portada. Se escriben como ID3 (MP3) o LIST/INFO + ID3 (WAV).</li>
+<li>Nombre automático: si hay título, el archivo se llama como el título (con «NN - » si hay número de pista); si no, como el original.</li></ul>
+</details>
+<details><summary>10. Lote</summary>
+<ul><li>Añade varios archivos de audio o vídeo (o envíalos desde Editor con <b>A lote</b> o desde Stems). Todos se procesan con la misma cadena y los ajustes de Exportar.</li>
+<li>Orden con ▲▼ o «A→Z»; el orden es la numeración de pistas. Cada archivo se guarda como «NN - Título». ✎ edita los datos de un archivo; lo vacío se hereda de los metadatos del lote.</li>
+<li>Pre-escucha con ▶. El ZIP se llama «Artista - Álbum (Año)».</li></ul>
+</details>
+<details><summary>11. Proyectos</summary>
+<ul><li><b>💾 Guardar</b> (Ctrl+S) crea un archivo .shproj con el audio, la cadena de máster, la selección, los marcadores, los metadatos, la portada y los stems. La versión ligera (16 bit) ocupa la mitad.</li>
+<li><b>📂 Abrir</b> lo recupera (se puede deshacer). <b>✚ Nuevo</b> vacía el editor (también se puede deshacer). No se guarda el historial de deshacer.</li></ul>
+</details>
+<details><summary>12. Conexión con el sampler</summary>
+<ul><li><b>Al sampler</b> envía todo el proyecto o la selección (con o sin cadena de máster) y abre SampledHeadApp, que lo carga en un pad.</li>
+<li><b>Del sampler</b> recoge el audio que mande el sampler («Enviar pad al editor»): puedes ignorarlo, añadirlo al final o abrirlo como proyecto nuevo.</li>
+<li>Las dos apps deben estar en el mismo dominio (mismo usuario de GitHub Pages) y en el mismo navegador. La primera vez se pide la dirección del sampler.</li></ul>
+</details>
+<details><summary>13. Atajos de teclado</summary>
+<p><b>Espacio</b> reproducir/parar · <b>Esc</b> parar · <b>Ctrl+Z</b> / <b>Ctrl+Mayús+Z</b> deshacer / rehacer · <b>Ctrl+X/C/V</b> cortar/copiar/pegar · <b>Supr</b> borrar · <b>Ctrl+A</b> todo · <b>I</b>/<b>O</b> inicio/fin en el cursor · <b>T</b> recortar · <b>M</b> marcador · <b>+</b>/<b>−</b> zoom · <b>L</b> bucle · <b>B</b> comparar máster · <b>Ctrl+S</b> guardar proyecto.</p>
+</details>
+<details><summary>14. Problemas frecuentes</summary>
+<ul><li><b>Stems: «Aborted()» o se queda sin memoria</b>: recarga la página, activa «Modo de poca memoria», separa solo una selección corta y cierra otras pestañas.</li>
+<li><b>MP3 no disponible</b>: la primera vez necesita cargar el codificador; si no puede, exporta en WAV.</li>
+<li><b>Un enlace no se descarga</b>: debe ser un enlace directo y el servidor debe permitirlo (CORS); si no, descarga el archivo y cárgalo desde «Archivo».</li>
+<li><b>La grabación no funciona</b>: necesita HTTPS y permiso de micrófono.</li>
+<li><b>La conexión con el sampler no responde</b>: comprueba que las dos apps estén en el mismo dominio y que el navegador no bloquee ventanas emergentes.</li></ul>
+</details>
+<details><summary>15. Novedades de la 1.16</summary>
+<ul><li>Conexión con el sampler · pestañas Análisis y Acordes · quitar ruido y silencios · marcadores con exportación de secciones · Stems de la selección y cortes en todas las pistas · normalización por LUFS · campo Tonalidad en los metadatos · idioma español/inglés y esta guía.</li></ul>
+</details>
+<details><summary>16. Versión</summary>
+<p><b>SampledHead Editor</b> · versión <b id="gverE">1.16</b></p>
+</details>
+</template><template id="guide-en"><details open><summary>1. Getting started</summary>
+<ol><li>In <b>Import</b> load an audio or video file, paste a direct link, or record with the microphone in <b>Record</b>.</li>
+<li>In <b>Editor</b> drag on the waveform to select and use the tools (cut, paste, fades, normalize…).</li>
+<li>In <b>Master</b> pick a preset or adjust the chain (EQ, compressor, multiband, exciter, tape, imager, maximizer).</li>
+<li>In <b>Export</b> choose the format and save. With <b>💾</b> you save the whole project (.shproj) to continue another day.</li></ol>
+<p class="tip">Everything happens on your device: audio is never uploaded to a server. It works offline (except the first download of the Stems model).</p>
+</details>
+<details><summary>2. The tabs</summary>
+<table><tbody>
+<tr><td>Editor</td><td>Waveform, selection, editing tools, markers.</td></tr>
+<tr><td>Master</td><td>Real-time mastering chain, meters, presets (391 from Ozone + 33 style presets + «My presets»).</td></tr>
+<tr><td>Record</td><td>Recorder (stereo/mono, choose input, monitor while recording).</td></tr>
+<tr><td>Import</td><td>File, video (extracts the audio), direct link.</td></tr>
+<tr><td>Stems</td><td>Separates vocals, drums, bass, guitar, piano and other with AI and lets you mix them.</td></tr>
+<tr><td>Analysis</td><td>Tempo, key and spectrogram.</td></tr>
+<tr><td>Chords</td><td>Detects the chords and shows them on piano, guitar or bass.</td></tr>
+<tr><td>Export</td><td>WAV/MP3, normalization, metadata and cover.</td></tr>
+<tr><td>Batch</td><td>Processes and exports many files with the same chain.</td></tr></tbody></table>
+</details>
+<details><summary>3. Selecting and editing</summary>
+<ul><li><b>Select</b>: drag on the waveform («Select» tool); with «Hand» you drag to pan. Zoom with +/−, Ctrl+wheel or pinch.</li>
+<li><b>Cut</b> copies the selection, removes it and joins the ends; <b>Delete</b> does the same without copying; <b>Copy</b>; <b>Paste</b> inserts at the cursor (or replaces the selection); <b>Trim</b> keeps only the selection. Everything can be undone (up to 40 steps).</li>
+<li>Cut, paste and trim only work in <b>L+R</b> channel mode (on L or R alone they would change the length of one channel).</li>
+<li><b>Extract</b> takes out a section (or the clipboard) as a new project or as a WAV.</li>
+<li>Fades, reverse, phase, normalize (peak or LUFS), gain, remove DC, channels, insert silence, mute.</li>
+<li><b>Zero X</b> snaps the selection edges to the zero crossing (no clicks).</li>
+<li><b>Lock Start / End</b>: prevents moving a selection edge by accident (only affects mouse/touch).</li></ul>
+</details>
+<details><summary>4. Markers</summary>
+<ul><li>Place the cursor and press <b>Marker</b> (or the <b>M</b> key). A flag appears on the waveform.</li>
+<li><b>Markers</b> opens the list: rename, go to the marker, delete and <b>Export sections</b>: each stretch between markers is saved as a file (in a ZIP) with the Export settings.</li>
+<li>Markers move by themselves when you cut, delete, paste or trim, can be undone and are saved in the project.</li></ul>
+</details>
+<details><summary>5. Remove noise and silences</summary>
+<ul><li><b>Remove noise</b>: reduces constant noise (hiss, hum, fan). Choose to learn the noise from the selection (a section where only noise is heard, ≥ 0.3 s) or automatic. Start with 10–15 dB; more can sound «watery».</li>
+<li><b>Remove silences</b>: shortens long silences. Adjust the threshold, the minimum length and how much to keep from each silence; it tells you how many it finds before applying.</li></ul>
+</details>
+<details><summary>6. Master</summary>
+<ul><li>The chain plays in real time. <b>Master ON/OFF</b> and the <b>B</b> key compare with the unprocessed audio.</li>
+<li><b>Apply to audio</b> renders the chain onto the audio (or the selection); it can be undone, and it leaves the live chain OFF so it is not doubled.</li>
+<li><b>Save mine</b> saves your chain as a named own preset («My presets»).</li>
+<li>Peak, LUFS, gain reduction and phase meters; the «Measure peak and LUFS» button measures the selection.</li></ul>
+</details>
+<details><summary>7. Stems (AI separation)</summary>
+<ul><li>Choose <b>which part</b> (whole project or just the selection) and <b>what to separate</b>: all 6 stems, vocals + instrumental or specific tracks (with an optional «Rest»).</li>
+<li>The first time the model (≈ 136 MB) is downloaded and kept for offline use. It is slow (several times the audio duration) and uses a lot of memory: on a phone turn on <b>Low-memory mode</b> and keep the screen on.</li>
+<li><b>Mixer</b>: M = mute, S = solo, volume per track. Drag over a waveform to select a section and use <b>Trim all</b> / <b>Delete section</b> (applied to all tracks; «Undo cut»).</li>
+<li><b>Mix to editor</b> sends what you hear to the editor (or replaces the separated part). <b>Export stems</b> and <b>To batch</b>. Stems are saved in the project.</li></ul>
+</details>
+<details><summary>8. Analysis and Chords</summary>
+<ul><li><b>Analysis</b>: tempo (BPM; use ÷2 / ×2 if it comes out double or half) and key of everything, the selection or a stem; «Write to metadata» saves them as BPM and Key. The <b>spectrogram</b> shows frequency (logarithmic scale) and time.</li>
+<li><b>Chords</b>: press «Detect chords» (soft/normal/detailed sensitivity). The timeline can be tapped to jump and follows playback. Choose <b>Piano</b>, <b>Guitar</b> or <b>Bass</b> to see it drawn.</li>
+<li>The <b>tuning</b> is selectable (standard, Drop D, DADGAD, Open D/G/E, half or whole step down, 7-string, 4/5/6-string bass or custom by typing the notes, e.g. <i>D A D G B E</i>). Fingerings are computed for any tuning and «Another fingering» shows alternatives.</li>
+<li><b>Export list</b> downloads the chords with their times as a .txt.</li>
+<li>Detection is approximate: it works best with clear harmonic music; with loud drums analyze the «Other», «Piano» or «Guitar» stem.</li></ul>
+</details>
+<details><summary>9. Exporting</summary>
+<ul><li>WAV (16/24/32 float) or MP3 (128–320 kbps), everything or just the selection, stereo / L / R / mono, with or without the master chain, resampling and dither.</li>
+<li><b>Normalize</b>: by peak (dBFS) or by loudness (<b>LUFS</b>, e.g. −14), with the peak limited to −1 dBFS.</li>
+<li><b>Metadata and cover</b>: title, artist, album, year, genre, track, disc, composer, BPM, key, comment and cover. Written as ID3 (MP3) or LIST/INFO + ID3 (WAV).</li>
+<li>Automatic name: if there is a title, the file is named after the title (with «NN - » if there is a track number); otherwise after the original.</li></ul>
+</details>
+<details><summary>10. Batch</summary>
+<ul><li>Add several audio or video files (or send them from Editor with <b>To batch</b> or from Stems). All are processed with the same chain and the Export settings.</li>
+<li>Order with ▲▼ or «A→Z»; the order is the track numbering. Each file is saved as «NN - Title». ✎ edits a file's data; empty fields are inherited from the batch metadata.</li>
+<li>Preview with ▶. The ZIP is named «Artist - Album (Year)».</li></ul>
+</details>
+<details><summary>11. Projects</summary>
+<ul><li><b>💾 Save</b> (Ctrl+S) creates a .shproj file with the audio, master chain, selection, markers, metadata, cover and stems. The light version (16 bit) is half the size.</li>
+<li><b>📂 Open</b> restores it (can be undone). <b>✚ New</b> empties the editor (can also be undone). The undo history is not saved.</li></ul>
+</details>
+<details><summary>12. Connection with the sampler</summary>
+<ul><li><b>To sampler</b> sends the whole project or the selection (with or without the master chain) and opens SampledHeadApp, which loads it into a pad.</li>
+<li><b>From sampler</b> picks up the audio the sampler sent («Send pad to editor»): you can ignore it, append it or open it as a new project.</li>
+<li>Both apps must be on the same domain (same GitHub Pages user) and in the same browser. The first time it asks for the sampler's address.</li></ul>
+</details>
+<details><summary>13. Keyboard shortcuts</summary>
+<p><b>Space</b> play/stop · <b>Esc</b> stop · <b>Ctrl+Z</b> / <b>Ctrl+Shift+Z</b> undo / redo · <b>Ctrl+X/C/V</b> cut/copy/paste · <b>Del</b> delete · <b>Ctrl+A</b> all · <b>I</b>/<b>O</b> start/end at cursor · <b>T</b> trim · <b>M</b> marker · <b>+</b>/<b>−</b> zoom · <b>L</b> loop · <b>B</b> compare master · <b>Ctrl+S</b> save project.</p>
+</details>
+<details><summary>14. Troubleshooting</summary>
+<ul><li><b>Stems: «Aborted()» or out of memory</b>: reload the page, turn on «Low-memory mode», separate only a short selection and close other tabs.</li>
+<li><b>MP3 not available</b>: the first time it needs to load the encoder; if it cannot, export as WAV.</li>
+<li><b>A link does not download</b>: it must be a direct link and the server must allow it (CORS); otherwise download the file and load it from «File».</li>
+<li><b>Recording does not work</b>: it needs HTTPS and microphone permission.</li>
+<li><b>The sampler connection does not respond</b>: check both apps are on the same domain and the browser is not blocking pop-ups.</li></ul>
+</details>
+<details><summary>15. What is new in 1.16</summary>
+<ul><li>Sampler connection · Analysis and Chords tabs · remove noise and silences · markers with section export · Stems of the selection and cuts across all tracks · LUFS normalization · Key field in the metadata · Spanish/English language and this guide.</li></ul>
+</details>
+<details><summary>16. Version</summary>
+<p><b>SampledHead Editor</b> · version <b id="gverE">1.16</b></p>
+</details>
+</template>
+<script type="application/json" id="i18ndata">{"x":{"+rueda o pellizco: zoom":"+wheel or pinch: zoom","A lote":"To batch","Abrir proyecto":"Open project","Abrir proyecto (.shproj)":"Open project (.shproj)","Acercar (+)":"Zoom in (+)","Acordes":"Chords","Acortar o quitar los silencios largos":"Shorten or remove long silences","Ajustar los extremos de la selección al cruce por cero más cercano":"Snap the selection edges to the nearest zero crossing","Ajustar zoom a la selección":"Zoom to the selection","Ajustes de exportación":"Export settings","Al final":"At the end","Al importar:":"On import:","Al lote":"To batch","Al principio":"At the start","Al sampler":"To sampler","Alejar (-)":"Zoom out (-)","Amplitud":"Amplitude","Analizar":"Analyze","Análisis":"Analysis","Aplica la cadena al audio (o a la selección) y se puede deshacer":"Applies the chain to the audio (or the selection); can be undone","Aplicar al audio":"Apply to audio","Aplicar la cadena de máster al exportar":"Apply the master chain when exporting","Archivo":"File","Archivo de audio":"Audio file","Archivos del lote":"Batch files","Arrastrar para desplazar":"Drag to pan","Arrastrar para seleccionar":"Drag to select","Atajos (ordenador)":"Shortcuts (computer)","Audio de un vídeo":"Audio from a video","Añadir al final":"Append to the end","Añadir archivos":"Add files","Bloquear el FIN de la selección (no se mueve por accidente; el inicio sigue libre)":"Lock the END of the selection (it will not move by accident; the start stays free)","Bloquear el INICIO de la selección (no se mueve por accidente; el fin sigue libre)":"Lock the START of the selection (it will not move by accident; the end stays free)","Borrar":"Delete","Borrar la selección y unir los extremos, sin copiarla (Supr)":"Delete the selection and join the ends, without copying it (Del)","Borrar modelo":"Delete model","Borrar trozo":"Delete section","Bucle":"Loop","Bucle (L)":"Loop (L)","Buscar":"Search","Buscar preset…":"Search preset…","Cadena de máster":"Master chain","Calidad:":"Quality:","Canales":"Channels","Canales sobre los que actúan la selección y las ediciones":"Channels affected by the selection and edits","Canales:":"Channels:","Cargando…":"Loading…","Cargar el modelo htdemucs_6s_fp16weights.onnx desde un archivo":"Load the htdemucs_6s_fp16weights.onnx model from a file","Cargar enlace":"Load link","Cerrar":"Close","Comparar con el audio sin procesar (B)":"Compare with the unprocessed audio (B)","Compartir":"Share","Conserva solo el trozo seleccionado en todas las pistas a la vez":"Keeps only the selected section in all tracks at once","Copiar":"Copy","Copiar la selección (Ctrl+C)":"Copy the selection (Ctrl+C)","Cortar":"Cut","Cortar: copia la selección, la quita y une los dos extremos (Ctrl+X)":"Cut: copies the selection, removes it and joins both ends (Ctrl+X)","Cruce 0":"Zero X","Cursor":"Cursor","Debe ser un enlace directo al archivo y el servidor tiene que permitir la descarga desde otra web (CORS). Si no, descarga el archivo y cárgalo desde aquí.":"It must be a direct link to the file and the server must allow downloads from another website (CORS). If not, download the file and load it from here.","Del sampler":"From sampler","Descargar de nuevo":"Download again","Deshacer":"Undo","Deshacer (Ctrl+Z)":"Undo (Ctrl+Z)","Deshacer corte":"Undo cut","Destino:":"Destination:","Detallada (más cambios)":"Detailed (more changes)","Detección aproximada: va mejor con música armónica clara; si hay batería fuerte, analiza el stem «Otros», «Piano» o «Guitarra».":"Approximate detection: works best with clear harmonic music; if the drums are loud, analyze the «Other», «Piano» or «Guitar» stem.","Detectar acordes":"Detect chords","Dividir el tempo entre 2":"Halve the tempo","Duración":"Duration","Edición":"Edit","Editor":"Editor","Ej.: D A D G B E":"e.g. D A D G B E","Elegir archivo de audio":"Choose audio file","Elegir pistas…":"Choose tracks…","Elegir vídeo":"Choose video","Empaquetar todo en un ZIP":"Pack everything into a ZIP","En el cursor":"At the cursor","Enlace directo":"Direct link","Entrada":"Input","Entrada predeterminada":"Default input","Enviar el audio (o la selección) a la pestaña Lote, con o sin cadena de máster":"Send the audio (or the selection) to the Batch tab, with or without the master chain","Escribir en los metadatos":"Write to metadata","Escuchar mientras grabo":"Monitor while recording","Espacio":"Space","Espectro":"Spectrum","Espectrograma":"Spectrogram","Estéreo":"Stereo","Exportar":"Export","Exportar lista (.txt)":"Export list (.txt)","Exportar stems":"Export stems","Extrae la pista de audio de un vídeo (MP4, MOV, WEBM, MKV…). Una grabación de pantalla del móvil con audio interno también sirve.":"Extracts the audio track from a video (MP4, MOV, WEBM, MKV…). A phone screen recording with internal audio also works.","Extraer":"Extract","Fase":"Phase","Fase L/R":"L/R phase","Fin":"End","Fin aquí ▸":"End here ▸","Formato":"Format","Frecuencia":"Frequency","Frecuencia en vertical (escala logarítmica), tiempo en horizontal; más brillo = más fuerte.":"Frequency vertical (logarithmic scale), time horizontal; brighter = louder.","Frecuencia:":"Frequency:","Fuente":"Source","Fundido ent.":"Fade in","Fundido sal.":"Fade out","Ganancia":"Gain","Generar":"Generate","Gestionar marcadores y exportar cada sección como archivo":"Manage markers and export each section as a file","Grabadora":"Recorder","Grabar":"Record","Guardar mío":"Save mine","Guardar proyecto":"Save project","Guardar proyecto (Ctrl+S)":"Save project (Ctrl+S)","Importa un archivo, un vídeo o un enlace, o graba con el micro.":"Import a file, a video or a link, or record with the microphone.","Importar":"Import","Inicio":"Start","Ins. silencio":"Ins. silence","Insertar en el cursor":"Insert at the cursor","Invertir":"Reverse","Ir al fin ⇥":"Go to end ⇥","La cadena sigue el orden de un máster: entrada → EQ → compresor → dinámica multibanda → exciter → cinta → imager → maximizer → salida. Se oye en tiempo real al reproducir; «Aplicar al audio» y Exportar la renderizan con los mismos ajustes.":"The chain follows the order of a mastering chain: input → EQ → compressor → multiband dynamics → exciter → tape → imager → maximizer → output. You hear it in real time while playing; «Apply to audio» and Export render it with the same settings.","Los 6 stems (voz, batería, bajo, guitarra, piano y otros)":"All 6 stems (vocals, drums, bass, guitar, piano and other)","Los archivos se renombran solos como «NN - Título»: el título es el que escribas en los metadatos (común o con ✎ por archivo); si lo dejas vacío se usa el nombre original.":"Files are renamed automatically as «NN - Title»: the title is the one you write in the metadata (common or with ✎ per file); if left empty the original name is used.","Lote":"Batch","M = silenciar · S = solo. Suenan a través de la cadena de máster. Toca una onda para ir a ese punto.":"M = mute · S = solo. They play through the master chain. Tap a waveform to jump to that point.","Mandar el audio (o la selección) al sampler, con o sin cadena de máster":"Send the audio (or the selection) to the sampler, with or without the master chain","Mano":"Hand","Marcador":"Marker","Marcadores":"Markers","Marcar el fin en el cursor (O)":"Set the end at the cursor (O)","Marcar el inicio en el cursor (I)":"Set the start at the cursor (I)","Mayús":"Shift","Medidores (salida)":"Meters (output)","Medir pico y LUFS":"Measure peak and LUFS","Metadatos del lote":"Batch metadata","Metadatos y portada":"Metadata and cover","Mezcla al editor":"Mix to editor","Mezclador de stems":"Stem mixer","Modelo desde archivo":"Model from file","Modo de poca memoria (recomendado en móvil; algo más lento)":"Low-memory mode (recommended on phones; a bit slower)","Mono mezcla":"Mono mix","Multiplicar el tempo por 2":"Double the tempo","Máster":"Master","Normalizar":"Normalize","Nuevo proyecto":"New project","Nuevo proyecto (vacía el editor; se puede deshacer)":"New project (empties the editor; can be undone)","Ordenar por nombre":"Sort by name","Otra digitación":"Another fingering","Parar":"Stop","Parte:":"Part:","Pegar":"Paste","Pegar en el cursor (inserta y desplaza el resto); si hay selección, la sustituye (Ctrl+V)":"Paste at the cursor (inserts and shifts the rest); if there is a selection, replaces it (Ctrl+V)","Pico":"Peak","Pico / LUFS":"Peak / LUFS","Pico sel.":"Sel. peak","Poner un marcador en el cursor (M)":"Put a marker at the cursor (M)","Por pico":"By peak","Por volumen (LUFS)":"By loudness (LUFS)","Posición":"Position","Pre-escucha con la cadena de máster":"Preview with the master chain","Preset anterior":"Previous preset","Preset siguiente":"Next preset","Presets de máster":"Master presets","Procesado":"Processed","Procesar":"Process","Procesar y exportar todo":"Process and export all","Profundidad:":"Depth:","Proyecto nuevo":"New project","Quita el trozo seleccionado de todas las pistas a la vez":"Removes the selected section from all tracks at once","Quitar DC":"Remove DC","Quitar ruido":"Remove noise","Quitar ruido constante (soplido, zumbido)":"Remove constant noise (hiss, hum)","Quitar silencios":"Remove silences","Quitar stems":"Remove stems","Qué exportar":"What to export","Qué parte":"Which part","Qué separar":"What to separate","Recoger el audio que haya mandado el sampler":"Pick up the audio the sampler sent","Recortar":"Trim","Recortar todas":"Trim all","Recortar: conserva SOLO la selección y borra el resto (T)":"Trim: keeps ONLY the selection and deletes the rest (T)","Reducción límite":"Limit reduction","Rehacer":"Redo","Rehacer (Ctrl+Mayús+Z)":"Redo (Ctrl+Shift+Z)","Reiniciar":"Reset","Renderiza lo que suena (pistas no silenciadas, con su volumen) como proyecto del editor":"Renders what you hear (unmuted tracks, at their volume) as an editor project","Reproducir":"Play","Reproducir o pausar":"Play or pause","Rueda: desplazar":"Wheel: pan","Sacar la selección o el portapapeles: proyecto nuevo o archivo WAV":"Take out the selection or the clipboard: new project or WAV file","Se desactivan la cancelación de eco, la reducción de ruido y el control automático de ganancia para grabar la señal tal cual (micro, línea o interfaz USB).":"Echo cancellation, noise reduction and automatic gain control are turned off to record the signal as is (mic, line or USB interface).","Se guarda como BPM y Tonalidad en los metadatos de exportación (pestaña Exportar).":"Saved as BPM and Key in the export metadata (Export tab).","Seguir":"Resume","Seguir con el siguiente":"Continue with the next one","Sel.":"Sel.","Selec.":"Select","Selección y puntos":"Selection and points","Sensibilidad":"Sensitivity","Separa todo el proyecto o solo la selección (más rápido y ligero). La IA siempre calcula los 6 stems; elegir menos reduce lo que se guarda en memoria y lo que ves en el mezclador. Tarda varias veces la duración del audio (más en el móvil): deja la pantalla encendida.":"Separates the whole project or just the selection (faster and lighter). The AI always computes all 6 stems; choosing fewer reduces what is kept in memory and what you see in the mixer. It takes several times the audio duration (more on a phone): keep the screen on.","Separar":"Separate","Separar en stems (IA)":"Separate into stems (AI)","Separar la voz, la batería, el bajo… con IA (pestaña Stems)":"Separate vocals, drums, bass… with AI (Stems tab)","Silenciar":"Mute","Sin audio":"No audio","Sin audio cargado":"No audio loaded","Sin preset":"No preset","Solo la selección":"Selection only","Suave (menos cambios)":"Soft (fewer changes)","Suelta aquí un archivo":"Drop a file here","Suelta aquí varios archivos":"Drop several files here","Supr":"Del","Tempo y tonalidad":"Tempo and key","Todo":"All","Tonalidad y BPM a metadatos":"Key and BPM to metadata","Tramado (dither) en 16 bits":"Dither at 16 bits","Vaciar":"Clear","Ver todo":"View all","Vista general: arrastra para desplazar":"Overview: drag to pan","Volumen objetivo":"Target loudness","Voz + instrumental":"Vocals + instrumental","audio o vídeo · se procesan todos con la misma cadena":"audio or video · all are processed with the same chain","borrar":"delete","bucle":"loop","comparar máster":"compare master","cortar / copiar / pegar":"cut / copy / paste","deshacer":"undo","inicio / fin en el cursor":"start / end at the cursor","nombre":"name","parar":"stop","recortar":"trim","rehacer":"redo","reproducir / parar":"play / stop","todo":"all","⇤ Ir al inicio":"⇤ Go to start","■ Detener":"■ Stop","▶ Reproducir":"▶ Play","◂ Inicio aquí":"◂ Start here","● Grabar":"● Record","❚❚ Pausa":"❚❚ Pause","🔓 Fin":"🔓 End","🔓 Inicio":"🔓 Start","🔒 Fin":"🔒 End","🔒 Inicio":"🔒 Start","Modo (IRC)":"Mode (IRC)","Mantener el balance entre L y R (misma ganancia)":"Keep the L/R balance (same gain)","Audio sin procesar (A/B)":"Unprocessed audio (A/B)","Cadena de máster activada":"Master chain on","Fin bloqueado (el inicio sí se puede mover)":"End locked (the start can still be moved)","Inicio bloqueado (el fin sí se puede mover)":"Start locked (the end can still be moved)","Máster OFF":"Master OFF","Máster ON":"Master ON","Proyecto vacío":"Empty project","Selección demasiado corta":"Selection too short","la selección":"the selection","selección":"selection","🔒 Inicio y fin bloqueados":"🔒 Start and end locked","Inicio y fin bloqueados":"Start and end locked","Puntos desbloqueados":"Points unlocked","No hay audio. Importa o graba algo primero.":"No audio. Import or record something first.","No hay audio cargado":"No audio loaded","Selecciona una parte arrastrando sobre la onda":"Select a part by dragging over the waveform","No hay nada copiado":"Nothing copied","Pegado en":"Pasted at","Fundido de entrada":"Fade in","Fundido de salida":"Fade out","Curva":"Curve","Suave (seno)":"Smooth (sine)","Lineal":"Linear","Exponencial":"Exponential","Invertir (reverse)":"Reverse","Invertir fase":"Invert phase","todo el audio":"the whole audio","Sonoridad (LUFS)":"Loudness (LUFS)","Objetivo":"Target","Intercambiar L ↔ R":"Swap L ↔ R","Copiar L a ambos":"Copy L to both","Copiar R a ambos":"Copy R to both","Mezclar a mono (ambos canales)":"Mix to mono (both channels)","Invertir la fase de R":"Invert the phase of R","Insertar silencio":"Insert silence","Nuevo proyecto (puedes deshacerlo)":"New project (you can undo it)","Los extremos se ajustan al cruce por cero":"The edges snap to the zero crossing","Ajuste a cruce por cero desactivado":"Zero-crossing snap off","Cancelar":"Cancel","Aplicar":"Apply","Insertar":"Insert","Pausa":"Pause","Escape":"Esc","Subir":"Up","Bajar":"Down","Quitar":"Remove","Guardar":"Save","· modificado":"· modified","Toca un punto para editar su tipo, frecuencia, ganancia y Q.":"Tap a point to edit its type, frequency, gain and Q.","Nada con ese nombre.":"Nothing with that name.","Se guarda en este dispositivo con todos los módulos activos y sus ajustes.":"Saved on this device with all active modules and their settings.","Analógico":"Analog","Aplicando la cadena de máster…":"Applying the master chain…","Aplicar máster":"Apply master","Armón. pares":"Even harm.","Arrastra los puntos: horizontal = frecuencia, vertical = ganancia. Doble toque en el gráfico crea una banda. Rueda sobre un punto = Q.":"Drag the points: horizontal = frequency, vertical = gain. Double-tap the graph to create a band. Wheel over a point = Q.","Carácter":"Character","Cálido":"Warm","Dinámica multibanda":"Multiband dynamics","Imager estéreo":"Stereo imager","La cadena está vacía: activa algún módulo o elige un preset":"The chain is empty: enable a module or choose a preset","Limitador con anticipación (3 ms): el pico no supera el techo. «Empuje» sube el nivel antes de limitar; «Carácter» añade saturación suave y alarga la relajación.":"Look-ahead limiter (3 ms): the peak does not exceed the ceiling. «Push» raises the level before limiting; «Character» adds soft saturation and lengthens the release.","Máster aplicado al audio. La cadena en vivo queda en OFF para no duplicarlo.":"Master applied to the audio. The live chain is set to OFF to avoid doubling it.","Máximo 8 bandas":"Maximum 8 bands","Relajación":"Release","Válvula":"Tube","Compresor":"Compressor","Cinta":"Tape","Mis presets":"My presets","Mi preset":"My preset","Guardar preset propio":"Save own preset","Cadena reiniciada":"Chain reset","Entrada y salida":"Input and output","Filtro SC":"SC filter","Énfasis agudos":"Treble emphasis","Velocidad":"Speed","Bandas":"Bands","+ Banda":"+ Band","Quitar banda":"Remove band","Reiniciar EQ":"Reset EQ","Shelf grave":"Low shelf","Shelf agudo":"High shelf","Pasa altos":"High-pass","Pasa bajos":"Low-pass","Campana":"Bell","Salida":"Output","Umbral":"Threshold","Ataque":"Attack","Empuje":"Push","Techo":"Ceiling","Retro":"Retro","Transistor":"Transistor","Digital":"Digital","Cantidad":"Amount","Mezcla":"Mix","Anchura":"Width","Carga o graba audio para poder exportar.":"Load or record audio to be able to export.","MP3 no disponible: falta lame.min.js. Mientras tanto puedes exportar en WAV.":"MP3 not available: lame.min.js is missing. Meanwhile you can export as WAV.","No se pudo compartir":"Could not share","El navegador no puede reproducir":"The browser cannot play","En espera":"Waiting","Metadatos de este archivo":"Metadata of this file","MP3 no disponible":"MP3 not available","Lote sin resultados":"Batch with no results","Lote terminado":"Batch finished","SampledHead lote":"SampledHead batch","No se pudo decodificar el audio (formato no admitido por este navegador).":"Could not decode the audio (format not supported by this browser).","Insertar audio":"Insert audio","Error al importar":"Import error","Este navegador no permite grabar (hace falta HTTPS).":"This browser does not allow recording (HTTPS is required).","▶ Seguir":"▶ Resume","En pausa":"Paused","Con la cadena de máster actual":"With the current master chain","Todavía no hay archivos.":"There are no files yet.","No hay selección: se exportará todo el audio.":"No selection: all the audio will be exported.","Sin cadena de máster":"No master chain","Sin cadena de máster (está desactivada o sin ajustes; los archivos solo se convierten).":"No master chain (it is off or has no settings; files are only converted).","Ajustando la frecuencia para MP3…":"Adjusting the sample rate for MP3…","Cambiando la frecuencia de muestreo…":"Changing the sample rate…","Cancelando…":"Cancelling…","Codificando MP3…":"Encoding MP3…","Creando WAV…":"Creating WAV…","Creando ZIP…":"Creating ZIP…","Decodificando…":"Decoding…","Descargando…":"Downloading…","Duración desconocida":"Unknown duration","El navegador no puede reproducir este vídeo.":"The browser cannot play this video.","Extrayendo el audio reproduciendo el vídeo…":"Extracting the audio by playing the video…","Grabando…":"Recording…","Leyendo…":"Reading…","MP3 con el codificador lamejs, incluido en la app (funciona sin conexión).":"MP3 with the lamejs encoder, built into the app (works offline).","Metadatos leídos del archivo":"Metadata read from the file","Ningún archivo de audio o vídeo válido":"No valid audio or video file","No se grabó nada.":"Nothing was recorded.","No se pudo cargar lame.min.js. Conéctate una vez a internet o copia lame.min.js junto a index.html.":"Could not load lame.min.js. Connect to the internet once or copy lame.min.js next to index.html.","No se pudo descargar: el servidor no permite el acceso (CORS) o el enlace no es directo. Descarga el archivo y cárgalo desde \"Archivo\".":"Could not download: the server does not allow access (CORS) or the link is not direct. Download the file and load it from \"File\".","No se pudo procesar ningún archivo.":"No file could be processed.","No se pudo reproducir el vídeo para extraer el audio.":"Could not play the video to extract the audio.","Preparando el codificador MP3…":"Preparing the MP3 encoder…","Procesando con la cadena de máster…":"Processing with the master chain…","Procesando…":"Processing…","estéreo":"stereo","Pista (n o n/total)":"Track (n or n/total)","Disco (n o n/total)":"Disc (n or n/total)","No se pudo leer la imagen":"Could not read the image","Portada":"Cover","Sin portada":"No cover","Elegir portada…":"Choose cover…","Numerar las pistas por el orden de la lista (1/N, 2/N…)":"Number the tracks by list order (1/N, 2/N…)","Escribir metadatos y portada en todos los archivos":"Write metadata and cover to all files","Incluir metadatos y portada en el archivo":"Include metadata and cover in the file","Artista del álbum":"Album artist","Año":"Year","Borrar los míos":"Delete mine","Género":"Genre","Imagen no válida":"Invalid image","Lo que dejes vacío se hereda de los datos comunes del lote.":"Anything you leave empty is inherited from the batch's common data.","Si el título está vacío, cada archivo usa su nombre original; si escribes uno, se usa ese (admite {nombre} y {n} para la posición). Los archivos se renombran solos como «NN - Título». El orden de la lista (▲▼) es el orden de las pistas. Con ✎ en cada archivo puedes cambiar sus datos individuales; lo que dejes vacío se hereda de aquí.":"If the title is empty, each file uses its original name; if you write one, that is used ({nombre} and {n} for the position are accepted). Files are renamed automatically as «NN - Title». The list order (▲▼) is the track order. With ✎ on each file you can change its individual data; anything left empty is inherited from here.","Título":"Title","Título (vacío = nombre del archivo)":"Title (empty = file name)","Título = nombre del archivo":"Title = file name","vacío = nombre original · admite {nombre} y {n}":"empty = original name · accepts {nombre} and {n}","Artista":"Artist","Álbum":"Album","Compositor":"Composer","Tonalidad":"Key","Comentario":"Comment","Proyecto nuevo: el trozo pasa a ser el proyecto abierto (el anterior se recupera con Deshacer; guárdalo antes con 💾 si quieres conservarlo).":"New project: the section becomes the open project (the previous one is recovered with Undo; save it first with 💾 if you want to keep it).","Descargar WAV: guarda el trozo como archivo sin tocar el proyecto.":"Download WAV: saves the section as a file without touching the project.","Se añade al final de la lista del Lote como un archivo más. Con cadena, se guarda una copia de los ajustes de máster de este momento. El título de los metadatos de Exportar, si lo has rellenado, pasa a ser el de este archivo.":"It is added to the end of the Batch list as one more file. With chain, a copy of the current master settings is stored. The title from the Export metadata, if you filled it in, becomes this file's title.","Guarda el audio completo, el máster (cadena y preset), la selección y los metadatos con la portada. No guarda el historial de deshacer.":"Saves the full audio, the master (chain and preset), the selection and the metadata with the cover. It does not save the undo history.","Quitarlo también del original (como Cortar)":"Also remove it from the original (like Cut)","Versión ligera (16 bit, ocupa la mitad)":"Light version (16 bit, half the size)","Qué enviar":"What to send","Qué extraer":"What to extract","Abriendo proyecto…":"Opening project…","El proyecto está incompleto o dañado":"The project is incomplete or damaged","Selecciona una parte (o copia algo) para extraerla":"Select a part (or copy something) to extract it","Extraer un trozo":"Extract a section","Descargar WAV":"Download WAV","No hay audio que guardar":"No audio to save","Nombre":"Name","Este archivo no es un proyecto de SampledHead Editor (.shproj)":"This file is not a SampledHead Editor project (.shproj)","No se pudo abrir el proyecto":"Could not open the project","Enviar al lote":"Send to batch","Todo el proyecto":"Whole project","Añadir «Resto» (todo lo demás, para que la suma sea la mezcla)":"Add «Rest» (everything else, so the sum is the mix)","Empaquetar en un ZIP":"Pack into a ZIP","Aplicar el volumen de cada pista":"Apply each track's volume","Formato, bits, normalización y metadatos son los de la pestaña Exportar.":"Format, bits, normalization and metadata are those of the Export tab.","Pistas":"Tracks","Arrastra sobre una onda para seleccionar un trozo; un toque = ir a ese punto.":"Drag over a waveform to select a section; a tap = go to that point.","Batería":"Drums","Bajo":"Bass","Otros":"Other","Voz":"Vocals","Guitarra":"Guitar","Piano":"Piano","Instrumental":"Instrumental","Resto":"Rest","Cargando el modelo en memoria… (puede tardar un poco)":"Loading the model into memory… (may take a moment)","El motor de IA se detuvo antes por falta de memoria. Recarga la página (cierra la pestaña y ábrela de nuevo) y prueba con el «Modo de poca memoria» activado.":"The AI engine stopped earlier due to lack of memory. Reload the page (close the tab and open it again) and try with «Low-memory mode» on.","Eso borraría todo":"That would delete everything","La mezcla de los stems audibles está en el editor (se puede deshacer)":"The mix of the audible stems is in the editor (can be undone)","Modelo de IA: guardado en este dispositivo (funciona sin conexión).":"AI model: saved on this device (works offline).","Modelo de IA: se descargará la primera vez (≈ 136 MB) y quedará guardado.":"AI model: it will be downloaded the first time (≈ 136 MB) and stay saved.","No se pudo cargar el motor de IA (onnxruntime-web). Hace falta conexión la primera vez.":"Could not load the AI engine (onnxruntime-web). A connection is needed the first time.","Preparando el motor de IA…":"Preparing the AI engine…","Preparando la descarga…":"Preparing the download…","Remuestreando a 44,1 kHz…":"Resampling to 44.1 kHz…","Separación cancelada":"Separation cancelled","Cancelado":"Cancelled","Stems de «":"Stems of «","Todas las pistas están silenciadas":"All tracks are muted","Todas las pistas recortadas a la selección":"All tracks trimmed to the selection","Todavía no hay stems en este proyecto.":"There are no stems in this project yet.","Uniendo los trozos…":"Joining the chunks…","Ya hay stems en el proyecto. ¿Sustituirlos por la nueva separación?":"There are already stems in the project. Replace them with the new separation?","¿Quitar los stems del proyecto?":"Remove the stems from the project?","No hay audio que separar":"No audio to separate","Elige al menos una pista":"Choose at least one track","Modelo borrado del dispositivo":"Model deleted from the device","Modelo cargado desde el archivo":"Model loaded from the file","No se pudo guardar el modelo":"Could not save the model","Mezcla de stems":"Stem mix","Sustituir esa parte":"Replace that part","Sustituir parte por la mezcla de stems":"Replace part with stem mix","Parte sustituida por la mezcla de los stems (se puede deshacer)":"Part replaced by the stem mix (can be undone)","MP3 no disponible: falta lame.min.js":"MP3 not available: lame.min.js is missing","Error al exportar":"Export error","Stems al lote":"Stems to batch","Selecciona un trozo arrastrando sobre una onda":"Select a section by dragging over a waveform","Trozo borrado en todas las pistas":"Section deleted in all tracks","Corte deshecho":"Cut undone","No hay audio":"No audio","Enviar al sampler":"Send to sampler","Enviar y abrir el sampler":"Send and open the sampler","Audio del sampler":"Audio from the sampler","Abrir como proyecto nuevo":"Open as new project","Ignorar":"Ignore","Abrir":"Open","No se pudo leer el audio del sampler":"Could not read the audio from the sampler","El audio se deja en la bandeja compartida (WAV 24 bit) y se abre el sampler, que lo carga en el primer pad libre. Las dos apps deben estar en el mismo dominio.":"The audio is left in the shared tray (24-bit WAV) and the sampler opens and loads it into the first free pad. Both apps must be on the same domain.","El sampler guarda su dirección la primera vez que lo abres con la versión nueva (1.58). Si aún no lo has hecho, pégala aquí (debe ser del mismo usuario de GitHub Pages que el editor).":"The sampler saves its address the first time you open it with the new version (1.58). If you have not done so yet, paste it here (it must be from the same GitHub Pages user as the editor).","Creando el WAV…":"Creating the WAV…","Dirección del sampler":"Sampler address","Dirección no válida":"Invalid address","El sampler no ha mandado nada todavía":"The sampler has not sent anything yet","Leyendo el audio del sampler…":"Reading the audio from the sampler…","Primero analiza":"First run the analysis","No hay audio que analizar":"No audio to analyze","Hace falta al menos 3 s de audio":"At least 3 s of audio are needed","Hace falta al menos 2 s de audio":"At least 2 s of audio are needed","Tempo no detectado":"Tempo not detected","No hay audio suficiente":"Not enough audio","Sin acorde":"No chord","Sin acorde en este momento":"No chord at this moment","No hay una digitación cómoda de este acorde en esta afinación":"There is no comfortable fingering for this chord in this tuning","Personalizada…":"Custom…","Estándar (E A D G B E)":"Standard (E A D G B E)","Estándar 4 cuerdas (E A D G)":"Standard 4-string (E A D G)","Medio tono abajo (Eb Ab Db Gb Bb Eb)":"Half step down (Eb Ab Db Gb Bb Eb)","Un tono abajo (D G C F A D)":"Whole step down (D G C F A D)","Medio tono abajo (Eb Ab Db Gb)":"Half step down (Eb Ab Db Gb)","Un tono abajo (D G C F)":"Whole step down (D G C F)","7 cuerdas (B E A D G B E)":"7-string (B E A D G B E)","5 cuerdas (B E A D G)":"5-string (B E A D G)","6 cuerdas (B E A D G C)":"6-string (B E A D G C)","Primero detecta los acordes":"First detect the chords","Lista de acordes descargada":"Chord list downloaded","No hay suficiente audio para el perfil de ruido":"Not enough audio for the noise profile","No hay silencios con esos ajustes":"No silences with those settings","Exportar secciones":"Export sections","Pon al menos un marcador":"Put at least one marker","No hay secciones":"No sections","Aproximación: el tempo puede salir al doble o a la mitad (usa ×2 / ÷2); la tonalidad es la más probable según las notas que más suenan":"Approximation: the tempo may come out double or half (use ×2 / ÷2); the key is the most likely one based on the notes that sound most","Acorta los silencios largos (grabaciones de voz o micrófono). Los marcadores se reajustan.":"Shortens long silences (voice or microphone recordings). Markers are readjusted.","Reduce ruido constante (soplido, zumbido, ventilador). Con «selección» aprende el ruido de un trozo donde solo se oye el ruido (≥ 0,3 s). Con reducciones altas puede sonar «acuoso»: mejor 10–15 dB.":"Reduces constant noise (hiss, hum, fan). With «selection» it learns the noise from a section where only noise is heard (≥ 0.3 s). With high reductions it can sound «watery»: 10–15 dB is better.","Dejar de cada silencio":"Keep from each silence","Silencio mínimo a quitar":"Minimum silence to remove","Umbral de silencio":"Silence threshold","Aplicar a":"Apply to","Reducción:":"Reduction:","Perfil del ruido":"Noise profile","Acordes de «":"Chords of «","Analizando el ruido…":"Analyzing the noise…","Analizando las notas…":"Analyzing the notes…","Analizando tempo y tonalidad…":"Analyzing tempo and key…","Aprender de la selección actual (":"Learn from the current selection (","Automático (los momentos más silenciosos)":"Automatic (the quietest moments)","Añadir en el cursor":"Add at the cursor","Aún no hay marcadores. Coloca el cursor y pulsa «Marcador» (o la tecla M).":"There are no markers yet. Place the cursor and press «Marker» (or the M key).","Cada marcador es el inicio de una sección que termina en el siguiente.":"Each marker is the start of a section that ends at the next one.","Calculando el espectrograma…":"Computing the spectrogram…","Detectando acordes…":"Detecting chords…","Eligiendo los acordes…":"Choosing the chords…","Rosa = fundamental · turquesa = notas del acorde (las del extremo izquierdo son cuerdas al aire)":"Pink = root · turquoise = chord notes (those at the far left are open strings)","Rosa = fundamental · turquesa = resto del acorde":"Pink = root · turquoise = rest of the chord","Quitando ruido… canal":"Removing noise… channel","Tonalidad…":"Key…","Ya hay un marcador aquí":"There is already a marker here","Perfil":"Profile","Nombre del archivo":"File name","Estándar":"Standard","(está desactivada o sin ajustes; los archivos solo se convierten).":"(it is off or has no settings; files are only converted).","Formato, bits/kbps, canales y frecuencia: los de la pestaña Exportar. La normalización no se aplica a los stems.":"Format, bits/kbps, channels and sample rate: those of the Export tab. Normalization is not applied to stems.","Modo":"Mode","marcador":"marker","Corte":"Cutoff","Pre-escucha":"Preview","Solo L":"L only","Solo R":"R only","Guía de uso":"User guide","Detalle y claridad":"Detail and clarity","Estilos · Dark wave, cold wave y post-punk":"Styles · Dark wave, cold wave and post-punk","Estilos · Lo-fi y boom bap":"Styles · Lo-fi and boom bap","Estilos · Nu metal y rap metal":"Styles · Nu metal and rap metal","Estilos · Punk, hardcore, grunge y noise":"Styles · Punk, hardcore, grunge and noise","Géneros":"Genres","Instrumentos y buses":"Instruments and buses","Máster general":"General master","Módulo · Cinta":"Module · Tape","Módulo · Compresor vintage":"Module · Vintage compressor","Módulo · Dinámica multibanda":"Module · Multiband dynamics","Módulo · EQ":"Module · EQ","Módulo · EQ vintage":"Module · Vintage EQ","Módulo · Exciter":"Module · Exciter","Módulo · Imager":"Module · Imager","Módulo · Limitador vintage":"Module · Vintage limiter","Módulo · Maximizer":"Module · Maximizer"},"f":{"+rueda o pellizco: zoom":"+wheel or pinch: zoom","Abrir proyecto (.shproj)":"Open project (.shproj)","Acortar o quitar los silencios largos":"Shorten or remove long silences","Ajustar los extremos de la selección al cruce por cero más cercano":"Snap the selection edges to the nearest zero crossing","Ajustar zoom a la selección":"Zoom to the selection","Ajustes de exportación":"Export settings","Aplica la cadena al audio (o a la selección) y se puede deshacer":"Applies the chain to the audio (or the selection); can be undone","Aplicar la cadena de máster al exportar":"Apply the master chain when exporting","Arrastrar para desplazar":"Drag to pan","Arrastrar para seleccionar":"Drag to select","Atajos (ordenador)":"Shortcuts (computer)","Bloquear el FIN de la selección (no se mueve por accidente; el inicio sigue libre)":"Lock the END of the selection (it will not move by accident; the start stays free)","Bloquear el INICIO de la selección (no se mueve por accidente; el fin sigue libre)":"Lock the START of the selection (it will not move by accident; the end stays free)","Borrar la selección y unir los extremos, sin copiarla (Supr)":"Delete the selection and join the ends, without copying it (Del)","Canales sobre los que actúan la selección y las ediciones":"Channels affected by the selection and edits","Cargar el modelo htdemucs_6s_fp16weights.onnx desde un archivo":"Load the htdemucs_6s_fp16weights.onnx model from a file","Comparar con el audio sin procesar (B)":"Compare with the unprocessed audio (B)","Conserva solo el trozo seleccionado en todas las pistas a la vez":"Keeps only the selected section in all tracks at once","Copiar la selección (Ctrl+C)":"Copy the selection (Ctrl+C)","Cortar: copia la selección, la quita y une los dos extremos (Ctrl+X)":"Cut: copies the selection, removes it and joins both ends (Ctrl+X)","Debe ser un enlace directo al archivo y el servidor tiene que permitir la descarga desde otra web (CORS). Si no, descarga el archivo y cárgalo desde aquí.":"It must be a direct link to the file and the server must allow downloads from another website (CORS). If not, download the file and load it from here.","Descargar de nuevo":"Download again","Detallada (más cambios)":"Detailed (more changes)","Detección aproximada: va mejor con música armónica clara; si hay batería fuerte, analiza el stem «Otros», «Piano» o «Guitarra».":"Approximate detection: works best with clear harmonic music; if the drums are loud, analyze the «Other», «Piano» or «Guitar» stem.","Dividir el tempo entre 2":"Halve the tempo","Elegir archivo de audio":"Choose audio file","Empaquetar todo en un ZIP":"Pack everything into a ZIP","Entrada predeterminada":"Default input","Enviar el audio (o la selección) a la pestaña Lote, con o sin cadena de máster":"Send the audio (or the selection) to the Batch tab, with or without the master chain","Escribir en los metadatos":"Write to metadata","Escuchar mientras grabo":"Monitor while recording","Exportar lista (.txt)":"Export list (.txt)","Extrae la pista de audio de un vídeo (MP4, MOV, WEBM, MKV…). Una grabación de pantalla del móvil con audio interno también sirve.":"Extracts the audio track from a video (MP4, MOV, WEBM, MKV…). A phone screen recording with internal audio also works.","Frecuencia en vertical (escala logarítmica), tiempo en horizontal; más brillo = más fuerte.":"Frequency vertical (logarithmic scale), time horizontal; brighter = louder.","Gestionar marcadores y exportar cada sección como archivo":"Manage markers and export each section as a file","Guardar proyecto (Ctrl+S)":"Save project (Ctrl+S)","Importa un archivo, un vídeo o un enlace, o graba con el micro.":"Import a file, a video or a link, or record with the microphone.","Insertar en el cursor":"Insert at the cursor","La cadena sigue el orden de un máster: entrada → EQ → compresor → dinámica multibanda → exciter → cinta → imager → maximizer → salida. Se oye en tiempo real al reproducir; «Aplicar al audio» y Exportar la renderizan con los mismos ajustes.":"The chain follows the order of a mastering chain: input → EQ → compressor → multiband dynamics → exciter → tape → imager → maximizer → output. You hear it in real time while playing; «Apply to audio» and Export render it with the same settings.","Los 6 stems (voz, batería, bajo, guitarra, piano y otros)":"All 6 stems (vocals, drums, bass, guitar, piano and other)","Los archivos se renombran solos como «NN - Título»: el título es el que escribas en los metadatos (común o con ✎ por archivo); si lo dejas vacío se usa el nombre original.":"Files are renamed automatically as «NN - Title»: the title is the one you write in the metadata (common or with ✎ per file); if left empty the original name is used.","M = silenciar · S = solo. Suenan a través de la cadena de máster. Toca una onda para ir a ese punto.":"M = mute · S = solo. They play through the master chain. Tap a waveform to jump to that point.","Mandar el audio (o la selección) al sampler, con o sin cadena de máster":"Send the audio (or the selection) to the sampler, with or without the master chain","Marcar el fin en el cursor (O)":"Set the end at the cursor (O)","Marcar el inicio en el cursor (I)":"Set the start at the cursor (I)","Medidores (salida)":"Meters (output)","Metadatos del lote":"Batch metadata","Metadatos y portada":"Metadata and cover","Mezclador de stems":"Stem mixer","Modelo desde archivo":"Model from file","Modo de poca memoria (recomendado en móvil; algo más lento)":"Low-memory mode (recommended on phones; a bit slower)","Multiplicar el tempo por 2":"Double the tempo","Nuevo proyecto (vacía el editor; se puede deshacer)":"New project (empties the editor; can be undone)","Ordenar por nombre":"Sort by name","Pegar en el cursor (inserta y desplaza el resto); si hay selección, la sustituye (Ctrl+V)":"Paste at the cursor (inserts and shifts the rest); if there is a selection, replaces it (Ctrl+V)","Poner un marcador en el cursor (M)":"Put a marker at the cursor (M)","Por volumen (LUFS)":"By loudness (LUFS)","Pre-escucha con la cadena de máster":"Preview with the master chain","Procesar y exportar todo":"Process and export all","Quita el trozo seleccionado de todas las pistas a la vez":"Removes the selected section from all tracks at once","Quitar ruido constante (soplido, zumbido)":"Remove constant noise (hiss, hum)","Recoger el audio que haya mandado el sampler":"Pick up the audio the sampler sent","Recortar: conserva SOLO la selección y borra el resto (T)":"Trim: keeps ONLY the selection and deletes the rest (T)","Rehacer (Ctrl+Mayús+Z)":"Redo (Ctrl+Shift+Z)","Renderiza lo que suena (pistas no silenciadas, con su volumen) como proyecto del editor":"Renders what you hear (unmuted tracks, at their volume) as an editor project","Reproducir o pausar":"Play or pause","Sacar la selección o el portapapeles: proyecto nuevo o archivo WAV":"Take out the selection or the clipboard: new project or WAV file","Se desactivan la cancelación de eco, la reducción de ruido y el control automático de ganancia para grabar la señal tal cual (micro, línea o interfaz USB).":"Echo cancellation, noise reduction and automatic gain control are turned off to record the signal as is (mic, line or USB interface).","Se guarda como BPM y Tonalidad en los metadatos de exportación (pestaña Exportar).":"Saved as BPM and Key in the export metadata (Export tab).","Seguir con el siguiente":"Continue with the next one","Selección y puntos":"Selection and points","Separa todo el proyecto o solo la selección (más rápido y ligero). La IA siempre calcula los 6 stems; elegir menos reduce lo que se guarda en memoria y lo que ves en el mezclador. Tarda varias veces la duración del audio (más en el móvil): deja la pantalla encendida.":"Separates the whole project or just the selection (faster and lighter). The AI always computes all 6 stems; choosing fewer reduces what is kept in memory and what you see in the mixer. It takes several times the audio duration (more on a phone): keep the screen on.","Separar en stems (IA)":"Separate into stems (AI)","Separar la voz, la batería, el bajo… con IA (pestaña Stems)":"Separate vocals, drums, bass… with AI (Stems tab)","Suave (menos cambios)":"Soft (fewer changes)","Suelta aquí un archivo":"Drop a file here","Suelta aquí varios archivos":"Drop several files here","Tonalidad y BPM a metadatos":"Key and BPM to metadata","Tramado (dither) en 16 bits":"Dither at 16 bits","Vista general: arrastra para desplazar":"Overview: drag to pan","Voz + instrumental":"Vocals + instrumental","audio o vídeo · se procesan todos con la misma cadena":"audio or video · all are processed with the same chain","cortar / copiar / pegar":"cut / copy / paste","inicio / fin en el cursor":"start / end at the cursor","reproducir / parar":"play / stop","⚠ recortará":"⚠ will clip","Hz); el tono cambiará":"Hz); the pitch will change","cambia la duración: usa el modo L+R (en un solo canal puedes Silenciar)":"changes the length: use L+R mode (on a single channel you can Mute)"," s · coloca el cursor y pulsa Pegar":" s · place the cursor and press Paste"," · coloca el cursor y pulsa Pegar":" · place the cursor and press Paste"," s · los extremos se han unido":" s · the ends were joined","· LUFS actual:":"· current LUFS:",": desbloquéalo con su candado para moverlo":": unlock it with its padlock to move it","Ganancia que se aplicará:":"Gain to be applied:","⚠ Limitada para no pasar de −0,1 dBFS de pico.":"⚠ Limited so the peak does not exceed −0.1 dBFS.","s, en el cursor (":"s, at the cursor (","Mantener el balance entre L y R (misma ganancia)":"Keep the L/R balance (same gain)","Audio sin procesar (A/B)":"Unprocessed audio (A/B)","Cadena de máster activada":"Master chain on","Fin bloqueado (el inicio sí se puede mover)":"End locked (the start can still be moved)","Inicio bloqueado (el fin sí se puede mover)":"Start locked (the end can still be moved)","Se pegó con otra frecuencia de muestreo (":"Pasted with a different sample rate (","Selección demasiado corta":"Selection too short","🔒 Inicio y fin bloqueados":"🔒 Start and end locked","Inicio y fin bloqueados":"Start and end locked","Puntos desbloqueados":"Points unlocked","No hay audio. Importa o graba algo primero.":"No audio. Import or record something first.","Deshecho: ":"Undone: ","Rehecho: ":"Redone: ","No hay audio cargado":"No audio loaded","Selecciona una parte arrastrando sobre la onda":"Select a part by dragging over the waveform","Cortado ":"Cut ","Borrado ":"Deleted ","Copiado ":"Copied ","Pegado ":"Pasted ","Pegar (":"Paste (","No hay nada copiado":"Nothing copied","Pegar en ":"Paste in ","Fundido de entrada":"Fade in","Invertir (reverse)":"Reverse","Pico resultante: ":"Resulting peak: ","Pico actual: ":"Current peak: ","Ganancia ":"Gain ","Sobre: ":"On: ","Intercambiar L ↔ R":"Swap L ↔ R","Mezclar a mono (ambos canales)":"Mix to mono (both channels)","Invertir la fase de R":"Invert the phase of R","Se aplica a ":"Applies to ","Nuevo proyecto (puedes deshacerlo)":"New project (you can undo it)","Los extremos se ajustan al cruce por cero":"The edges snap to the zero crossing","Ajuste a cruce por cero desactivado":"Zero-crossing snap off","Toca un punto para editar su tipo, frecuencia, ganancia y Q.":"Tap a point to edit its type, frequency, gain and Q.","Nada con ese nombre.":"Nothing with that name.","Se guarda en este dispositivo con todos los módulos activos y sus ajustes.":"Saved on this device with all active modules and their settings.","Aplicando la cadena de máster…":"Applying the master chain…","Arrastra los puntos: horizontal = frecuencia, vertical = ganancia. Doble toque en el gráfico crea una banda. Rueda sobre un punto = Q.":"Drag the points: horizontal = frequency, vertical = gain. Double-tap the graph to create a band. Wheel over a point = Q.","Dinámica multibanda":"Multiband dynamics","La cadena está vacía: activa algún módulo o elige un preset":"The chain is empty: enable a module or choose a preset","Limitador con anticipación (3 ms): el pico no supera el techo. «Empuje» sube el nivel antes de limitar; «Carácter» añade saturación suave y alarga la relajación.":"Look-ahead limiter (3 ms): the peak does not exceed the ceiling. «Push» raises the level before limiting; «Character» adds soft saturation and lengthens the release.","Máster aplicado al audio. La cadena en vivo queda en OFF para no duplicarlo.":"Master applied to the audio. The live chain is set to OFF to avoid doubling it.","Guardar preset propio":"Save own preset","Preset: ":"Preset: ","Guardado: ":"Saved: ","Activar ":"Enable ","Corte ":"Cutoff ","Banda ":"Band ","No se pudo aplicar: ":"Could not apply: ","no se pudo cargar ":"could not load ","Carga o graba audio para poder exportar.":"Load or record audio to be able to export.","todo el audio ":"the whole audio ","MP3 no disponible: falta lame.min.js. Mientras tanto puedes exportar en WAV.":"MP3 not available: lame.min.js is missing. Meanwhile you can export as WAV.","Listo: ":"Done: ","Exportado: ":"Exported: ","Error al exportar: ":"Export error: ","Error: ":"Error: ","No se pudo compartir":"Could not share","El navegador no puede reproducir":"The browser cannot play","El navegador no puede reproducir ":"The browser cannot play ","No se pudo reproducir ":"Could not play ","Pre-escucha de ":"Preview of ","Metadatos de este archivo":"Metadata of this file","Lote sin resultados":"Batch with no results","Error en el lote: ":"Batch error: ","No se pudo decodificar el audio (formato no admitido por este navegador).":"Could not decode the audio (format not supported by this browser).","Cargar ":"Load ","Cargado: ":"Loaded: ","Leyendo ":"Reading ","Importando ":"Importing ","Entrada ":"Input ","No se pudo acceder a las entradas: ":"Could not access the inputs: ","Este navegador no permite grabar (hace falta HTTPS).":"This browser does not allow recording (HTTPS is required).","No se pudo abrir el micro: ":"Could not open the microphone: ","Permiso denegado o entrada no disponible (":"Permission denied or input not available (","Grabando a ":"Recording at ","Grabado: ":"Recorded: "," Hz…":" Hz…"," LUFS (pico máx. −1 dBFS)":" LUFS (max peak −1 dBFS)"," con error":" with error",", con la cadena de máster":", with the master chain","Con la cadena de máster actual":"With the current master chain","Todavía no hay archivos.":"There are no files yet.","No hay selección: se exportará todo el audio.":"No selection: all the audio will be exported.","Sin cadena de máster":"No master chain","Sin cadena de máster (está desactivada o sin ajustes; los archivos solo se convierten).":"No master chain (it is off or has no settings; files are only converted).","Ajustando la frecuencia para MP3…":"Adjusting the sample rate for MP3…","Audio añadido: ":"Audio added: ","Cada archivo se exporta completo, ":"Each file is exported in full, ","Cambiando la frecuencia de muestreo…":"Changing the sample rate…","Duración desconocida":"Unknown duration","El navegador no puede reproducir este vídeo.":"The browser cannot play this video.","El servidor respondió ":"The server replied ","Extrayendo el audio reproduciendo el vídeo…":"Extracting the audio by playing the video…","Grabación ":"Recording ","Listo · ":"Done · ","MP3 con el codificador lamejs, incluido en la app (funciona sin conexión).":"MP3 with the lamejs encoder, built into the app (works offline).","Metadatos leídos del archivo":"Metadata read from the file","Ningún archivo de audio o vídeo válido":"No valid audio or video file","No se pudo cargar lame.min.js. Conéctate una vez a internet o copia lame.min.js junto a index.html.":"Could not load lame.min.js. Connect to the internet once or copy lame.min.js next to index.html.","No se pudo descargar: el servidor no permite el acceso (CORS) o el enlace no es directo. Descarga el archivo y cárgalo desde \"Archivo\".":"Could not download: the server does not allow access (CORS) or the link is not direct. Download the file and load it from \"File\".","No se pudo procesar ningún archivo.":"No file could be processed.","No se pudo reproducir el vídeo para extraer el audio.":"Could not play the video to extract the audio.","Preparando el codificador MP3…":"Preparing the MP3 encoder…","Procesando con la cadena de máster…":"Processing with the master chain…","Se exportará ":"Will export ","la selección ":"the selection ","archivos en un ZIP":"files in a ZIP","Pista (n o n/total)":"Track (n or n/total)","Disco (n o n/total)":"Disc (n or n/total)","No se pudo leer la imagen":"Could not read the image","Metadatos: ":"Metadata: ","Numerar las pistas por el orden de la lista (1/N, 2/N…)":"Number the tracks by list order (1/N, 2/N…)","Escribir metadatos y portada en todos los archivos":"Write metadata and cover to all files","Incluir metadatos y portada en el archivo":"Include metadata and cover in the file","Lo que dejes vacío se hereda de los datos comunes del lote.":"Anything you leave empty is inherited from the batch's common data.","Si el título está vacío, cada archivo usa su nombre original; si escribes uno, se usa ese (admite {nombre} y {n} para la posición). Los archivos se renombran solos como «NN - Título». El orden de la lista (▲▼) es el orden de las pistas. Con ✎ en cada archivo puedes cambiar sus datos individuales; lo que dejes vacío se hereda de aquí.":"If the title is empty, each file uses its original name; if you write one, that is used ({nombre} and {n} for the position are accepted). Files are renamed automatically as «NN - Title». The list order (▲▼) is the track order. With ✎ on each file you can change its individual data; anything left empty is inherited from here.","Título (vacío = nombre del archivo)":"Title (empty = file name)","Título = nombre del archivo":"Title = file name","vacío = nombre original · admite {nombre} y {n}":"empty = original name · accepts {nombre} and {n}"," (si queda vacío)":" (if left empty)"," (ahora no hay ningún módulo activo)":" (no module is active now)"," (selección)":" (selection)"," · con cadena":" · with chain"," · sin cadena":" · without chain","Proyecto nuevo: el trozo pasa a ser el proyecto abierto (el anterior se recupera con Deshacer; guárdalo antes con 💾 si quieres conservarlo).":"New project: the section becomes the open project (the previous one is recovered with Undo; save it first with 💾 if you want to keep it).","Descargar WAV: guarda el trozo como archivo sin tocar el proyecto.":"Download WAV: saves the section as a file without touching the project.","Se añade al final de la lista del Lote como un archivo más. Con cadena, se guarda una copia de los ajustes de máster de este momento. El título de los metadatos de Exportar, si lo has rellenado, pasa a ser el de este archivo.":"It is added to the end of the Batch list as one more file. With chain, a copy of the current master settings is stored. The title from the Export metadata, if you filled it in, becomes this file's title.","Guarda el audio completo, el máster (cadena y preset), la selección y los metadatos con la portada. No guarda el historial de deshacer.":"Saves the full audio, the master (chain and preset), the selection and the metadata with the cover. It does not save the undo history.","Quitarlo también del original (como Cortar)":"Also remove it from the original (like Cut)","Versión ligera (16 bit, ocupa la mitad)":"Light version (16 bit, half the size)","Abriendo proyecto…":"Opening project…","El proyecto está incompleto o dañado":"The project is incomplete or damaged","En espera · ":"Waiting · ","Extracto abierto como proyecto nuevo · ":"Excerpt opened as a new project · ","Selección (":"Selection (","Tamaño aproximado: ":"Approximate size: ","Selecciona una parte (o copia algo) para extraerla":"Select a part (or copy something) to extract it","Portapapeles (":"Clipboard (","Descargado: ":"Downloaded: "," s (Deshacer recupera el anterior)":" s (Undo recovers the previous one)","No hay audio que guardar":"No audio to save","Proyecto guardado: ":"Project saved: ","Este archivo no es un proyecto de SampledHead Editor (.shproj)":"This file is not a SampledHead Editor project (.shproj)","Proyecto abierto: ":"Project opened: ","No se pudo abrir el proyecto":"Could not open the project","Todo el proyecto (":"Whole project (","con cadena":"with chain","Enviado al lote: ":"Sent to batch: ","Enviados al lote: ":"Sent to batch: ","del proyecto. ¿Qué quieres hacer con la mezcla?":"of the project. What do you want to do with the mix?"," pistas · ":" tracks · "," · puedes deshacerlo":" · you can undo it"," · quedan ≈ ":" · about  left ",". Recarga la página y vuelve a probar con el «Modo de poca memoria» activado":". Reload the page and try again with «Low-memory mode» on",".\n\nDetalle técnico: ":".\n\nTechnical detail: ","Los stems son solo de la parte ":"The stems are only for the part ","Añadir «Resto» (todo lo demás, para que la suma sea la mezcla)":"Add «Rest» (everything else, so the sum is the mix)","Empaquetar en un ZIP":"Pack into a ZIP","Aplicar el volumen de cada pista":"Apply each track's volume","Formato, bits, normalización y metadatos son los de la pestaña Exportar.":"Format, bits, normalization and metadata are those of the Export tab.","Solo la selección del editor (":"Editor selection only (","Ajustando la frecuencia de «":"Adjusting the sample rate of «","Arrastra sobre una onda para seleccionar un trozo; un toque = ir a ese punto.":"Drag over a waveform to select a section; a tap = go to that point.","Cargando el modelo en memoria… (puede tardar un poco)":"Loading the model into memory… (may take a moment)","Descargando el modelo de IA (solo la primera vez)… ":"Downloading the AI model (first time only)… ","El motor de IA se detuvo antes por falta de memoria. Recarga la página (cierra la pestaña y ábrela de nuevo) y prueba con el «Modo de poca memoria» activado.":"The AI engine stopped earlier due to lack of memory. Reload the page (close the tab and open it again) and try with «Low-memory mode» on.","El motor de IA se quedó sin memoria al ":"The AI engine ran out of memory while trying to ","La mezcla de los stems audibles está en el editor (se puede deshacer)":"The mix of the audible stems is in the editor (can be undone)","Modelo de IA: guardado en este dispositivo (funciona sin conexión).":"AI model: saved on this device (works offline).","Modelo de IA: se descargará la primera vez (≈ 136 MB) y quedará guardado.":"AI model: it will be downloaded the first time (≈ 136 MB) and stay saved.","No se pudo cargar el motor de IA (onnxruntime-web). Hace falta conexión la primera vez.":"Could not load the AI engine (onnxruntime-web). A connection is needed the first time.","Preparando el motor de IA…":"Preparing the AI engine…","Preparando la descarga…":"Preparing the download…","Remuestreando a 44,1 kHz…":"Resampling to 44.1 kHz…","Selección: ":"Selection: ","Separación cancelada":"Separation cancelled","Separando… trozo ":"Separating… chunk ","Todas las pistas están silenciadas":"All tracks are muted","Todas las pistas recortadas a la selección":"All tracks trimmed to the selection","Todavía no hay stems en este proyecto.":"There are no stems in this project yet.","Uniendo los trozos…":"Joining the chunks…","Ya hay stems en el proyecto. ¿Sustituirlos por la nueva separación?":"There are already stems in the project. Replace them with the new separation?","¿Quitar los stems del proyecto?":"Remove the stems from the project?","No se pudo descargar el modelo (HTTP ":"Could not download the model (HTTP ","No hay audio que separar":"No audio to separate","Elige al menos una pista":"Choose at least one track","cargar el modelo":"load the model","separar el trozo ":"separate chunk "," (ya estaba activado: prueba en un ordenador o con otro dispositivo)":" (it was already on: try on a computer or another device)","Error al ":"Error while trying to "," (solo la parte ":" (only the part ","Modelo borrado del dispositivo":"Model deleted from the device","Modelo cargado desde el archivo":"Model loaded from the file","No se pudo guardar el modelo":"Could not save the model","Sustituir esa parte":"Replace that part","Sustituir parte por la mezcla de stems":"Replace part with stem mix","Parte sustituida por la mezcla de los stems (se puede deshacer)":"Part replaced by the stem mix (can be undone)"," (mezcla de stems)":" (stem mix)","MP3 no disponible: falta lame.min.js":"MP3 not available: lame.min.js is missing","Stems exportados: ":"Stems exported: ","Stem ":"Stem ","Selecciona un trozo arrastrando sobre una onda":"Select a section by dragging over a waveform","Trozo borrado en todas las pistas":"Section deleted in all tracks","Enviar y abrir el sampler":"Send and open the sampler","Enviado a la bandeja: ":"Sent to the tray: ","No se pudo enviar: ":"Could not send: ","Abrir como proyecto nuevo":"Open as new project","No se pudo leer el audio del sampler":"Could not read the audio from the sampler","El audio se deja en la bandeja compartida (WAV 24 bit) y se abre el sampler, que lo carga en el primer pad libre. Las dos apps deben estar en el mismo dominio.":"The audio is left in the shared tray (24-bit WAV) and the sampler opens and loads it into the first free pad. Both apps must be on the same domain.","El sampler guarda su dirección la primera vez que lo abres con la versión nueva (1.58). Si aún no lo has hecho, pégala aquí (debe ser del mismo usuario de GitHub Pages que el editor).":"The sampler saves its address the first time you open it with the new version (1.58). If you have not done so yet, paste it here (it must be from the same GitHub Pages user as the editor).","Dirección del sampler":"Sampler address","Dirección no válida":"Invalid address","El sampler no ha mandado nada todavía":"The sampler has not sent anything yet","Leyendo el audio del sampler…":"Reading the audio from the sampler…","Primero analiza":"First run the analysis","Stem: ":"Stem: ","No hay audio que analizar":"No audio to analyze","Hace falta al menos 3 s de audio":"At least 3 s of audio are needed","Hace falta al menos 2 s de audio":"At least 2 s of audio are needed","No se pudo analizar: ":"Could not analyze: ","Tempo no detectado":"Tempo not detected","No hay audio suficiente":"Not enough audio","No se pudo generar: ":"Could not generate: ","No se pudo detectar: ":"Could not detect: ","Tonalidad probable: ":"Probable key: "," acordes en ":" chords in "," mayor":" major"," menor":" minor","Sin acorde en este momento":"No chord at this moment","No hay una digitación cómoda de este acorde en esta afinación":"There is no comfortable fingering for this chord in this tuning","Notas: ":"Notes: ","Estándar (E A D G B E)":"Standard (E A D G B E)","Estándar 4 cuerdas (E A D G)":"Standard 4-string (E A D G)","Medio tono abajo (Eb Ab Db Gb Bb Eb)":"Half step down (Eb Ab Db Gb Bb Eb)","Un tono abajo (D G C F A D)":"Whole step down (D G C F A D)","Medio tono abajo (Eb Ab Db Gb)":"Half step down (Eb Ab Db Gb)","Un tono abajo (D G C F)":"Whole step down (D G C F)","7 cuerdas (B E A D G B E)":"7-string (B E A D G B E)","5 cuerdas (B E A D G)":"5-string (B E A D G)","6 cuerdas (B E A D G C)":"6-string (B E A D G C)","Primero detecta los acordes":"First detect the chords","Lista de acordes descargada":"Chord list downloaded","No hay suficiente audio para el perfil de ruido":"Not enough audio for the noise profile","Quitar ruido (":"Remove noise (","Ruido reducido (":"Noise reduced (","Error al quitar ruido: ":"Error removing noise: ","Se encontraron ":"Found "," silencios; se quitarían ≈ ":" silences; about  would be removed ","No hay silencios con esos ajustes":"No silences with those settings","Quitados ":"Removed "," s de silencio en ":" s of silence in "," tramos":" stretches","Marcador en ":"Marker at ","Marcador ":"Marker ","Exportar secciones":"Export sections","Pon al menos un marcador":"Put at least one marker"," secciones exportadas en un ZIP":" sections exported in a ZIP","· M para añadir, «Marcadores» para gestionarlos":"· M to add, «Markers» to manage them"," · M para añadir, «Marcadores» para gestionarlos":" · M to add, «Markers» to manage them"," dB). Si suena raro, deshaz y prueba con menos reducción":" dB). If it sounds odd, undo and try less reduction"," · tonalidad ":" · key ","Aproximación: el tempo puede salir al doble o a la mitad (usa ×2 / ÷2); la tonalidad es la más probable según las notas que más suenan":"Approximation: the tempo may come out double or half (use ×2 / ÷2); the key is the most likely one based on the notes that sound most","Acorta los silencios largos (grabaciones de voz o micrófono). Los marcadores se reajustan.":"Shortens long silences (voice or microphone recordings). Markers are readjusted.","Reduce ruido constante (soplido, zumbido, ventilador). Con «selección» aprende el ruido de un trozo donde solo se oye el ruido (≥ 0,3 s). Con reducciones altas puede sonar «acuoso»: mejor 10–15 dB.":"Reduces constant noise (hiss, hum, fan). With «selection» it learns the noise from a section where only noise is heard (≥ 0.3 s). With high reductions it can sound «watery»: 10–15 dB is better.","Dejar de cada silencio":"Keep from each silence","Silencio mínimo a quitar":"Minimum silence to remove","Umbral de silencio":"Silence threshold","Analizando el ruido…":"Analyzing the noise…","Analizando las notas…":"Analyzing the notes…","Analizando tempo y tonalidad…":"Analyzing tempo and key…","Aprender de la selección actual (":"Learn from the current selection (","Automático (los momentos más silenciosos)":"Automatic (the quietest moments)","Añadir en el cursor":"Add at the cursor","Aún no hay marcadores. Coloca el cursor y pulsa «Marcador» (o la tecla M).":"There are no markers yet. Place the cursor and press «Marker» (or the M key).","Cada marcador es el inicio de una sección que termina en el siguiente.":"Each marker is the start of a section that ends at the next one.","Calculando el espectrograma…":"Computing the spectrogram…","Detectando acordes…":"Detecting chords…","Digitación ":"Fingering ","Eligiendo los acordes…":"Choosing the chords…","Escrito en los metadatos de exportación: ":"Written to the export metadata: ","Rosa = fundamental · turquesa = notas del acorde (las del extremo izquierdo son cuerdas al aire)":"Pink = root · turquoise = chord notes (those at the far left are open strings)","Rosa = fundamental · turquesa = resto del acorde":"Pink = root · turquoise = rest of the chord","Quitando ruido… canal":"Removing noise… channel","Quitando ruido… canal ":"Removing noise… channel ","Tempo…":"Tempo…","Ya hay un marcador aquí":"There is already a marker here","Nombre del archivo":"File name"," s en ":" s at ","(está desactivada o sin ajustes; los archivos solo se convierten).":"(it is off or has no settings; files are only converted).","Formato, bits/kbps, canales y frecuencia: los de la pestaña Exportar. La normalización no se aplica a los stems.":"Format, bits/kbps, channels and sample rate: those of the Export tab. Normalization is not applied to stems.",": el trozo pasa a ser el proyecto abierto (el anterior se recupera con Deshacer; guárdalo antes con 💾 si quieres conservarlo).":": the section becomes the open project (the previous one is recovered with Undo; save it first with 💾 if you want to keep it).",": guarda el trozo como archivo sin tocar el proyecto.":": saves the section as a file without touching the project.","Activar Compresor":"Enable Compressor","Activar Cinta":"Enable Tape","Activar Dinámica multibanda":"Enable Multiband dynamics","Activar Imager estéreo":"Enable Stereo imager","Activar Exciter":"Enable Exciter","Activar Maximizer":"Enable Maximizer","Activar EQ":"Enable EQ","la selección":"the selection","Detalle y claridad":"Detail and clarity","Estilos · Dark wave, cold wave y post-punk":"Styles · Dark wave, cold wave and post-punk","Estilos · Lo-fi y boom bap":"Styles · Lo-fi and boom bap","Estilos · Nu metal y rap metal":"Styles · Nu metal and rap metal","Estilos · Punk, hardcore, grunge y noise":"Styles · Punk, hardcore, grunge and noise","Instrumentos y buses":"Instruments and buses","Módulo · Compresor vintage":"Module · Vintage compressor","Módulo · Dinámica multibanda":"Module · Multiband dynamics","Módulo · EQ vintage":"Module · Vintage EQ","Módulo · Limitador vintage":"Module · Vintage limiter","Módulo · Maximizer":"Module · Maximizer"},"r":[["(\\d+) de (\\d+)","$1 of $2"],["Sección (\\d+/\\d+)","Section $1"],["Sección (\\d+)","Section $1"]]}</script>
 <script type="text/plain" id="dspsrc">/* ===== MasterDSP: cadena de máster (se usa en el worklet, en Worker y en pruebas) ===== */
 function bqCoef(type,f,g,q,sr){
   f=Math.max(10,Math.min(f,sr*0.49));q=Math.max(0.1,q||0.7071);
@@ -1162,7 +1412,7 @@ u.setModules(B,G,f,b,v,a,m,z,g);G.setModules(B,g,m,a);z.setModules(G,m);f.setMod
 a.length>D&&(D=a.length,p=0|1.25*D+7200,r=new Int8Array(p));a=u.lame_encode_buffer(q,a,b,a.length,r,0,p);return new Int8Array(r.subarray(0,a))};this.flush=function(){var a=u.lame_encode_flush(q,r,0,p);return new Int8Array(r.subarray(0,a))}};lamejs.WavHeader=Fa}lamejs();
 
 </script>
-<script>/* SampledHead Editor v1.15 */
+<script>/* SampledHead Editor v1.16 */
 'use strict';
 /* ====================== utilidades y estado ====================== */
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
@@ -1352,6 +1602,7 @@ function paint(){
     c.fillStyle='#19d3c5';c.beginPath();c.arc(xa,RH+16,tw,0,7);c.arc(xb,CH-16,tw,0,7);c.fill();
     c.fillStyle='#06090d';c.font='700 9px system-ui';c.textAlign='center';c.fillText('◂',xa,RH+16.5);c.fillText('▸',xb,CH-15.5);c.textAlign='left';
   }
+  mkPaint(c,RH,CH,CW);
   /* cursor */
   if(!S.playing||true){const x=s2x(S.cur);if(x>=0&&x<=CW&&!hasSel()){c.fillStyle='#ffe066';c.fillRect(Math.round(x),RH,1.5,CH-RH);}}
   /* cabezal */
@@ -1475,11 +1726,11 @@ $('#mini').addEventListener('pointerdown',e=>{const r=e.target.getBoundingClient
 
 /* ====================== historial y edición ====================== */
 function pushHist(label){
-  S.hist.length=S.hp+1;S.hist.push({L:S.L,R:S.R,sr:S.sr,name:S.name,a:S.a,b:S.b,cur:S.cur,label});S.hp=S.hist.length-1;
+  S.hist.length=S.hp+1;S.hist.push({L:S.L,R:S.R,sr:S.sr,name:S.name,a:S.a,b:S.b,cur:S.cur,mk:(S.mk||[]).map(m=>({...m})),label});S.hp=S.hist.length-1;
   let tot=0;const seen=new Set();const count=()=>{tot=0;seen.clear();for(const h of S.hist){for(const a of [h.L,h.R]){if(a&&!seen.has(a)){seen.add(a);tot+=a.length;}}}return tot;};
   while(S.hist.length>2&&(S.hist.length>40||count()>190e6)){S.hist.shift();S.hp--;}
 }
-function restore(h){stopPlay(true);S.L=h.L;S.R=h.R;S.sr=h.sr;S.name=h.name;S.a=h.a;S.b=h.b;S.cur=h.cur;S.vs=clamp(S.vs,0,maxVs());clampView();paintAll(true);updInfo();updSelPeak();}
+function restore(h){stopPlay(true);S.L=h.L;S.R=h.R;S.sr=h.sr;S.name=h.name;S.a=h.a;S.b=h.b;S.cur=h.cur;S.mk=(h.mk||[]).map(m=>({...m}));S.vs=clamp(S.vs,0,maxVs());clampView();paintAll(true);updInfo();updSelPeak();}
 function undo(){if(S.hp<=0)return;S.hp--;restore(S.hist[S.hp]);toast('Deshecho: '+S.hist[S.hp+1].label);}
 function redo(){if(S.hp>=S.hist.length-1)return;S.hp++;restore(S.hist[S.hp]);toast('Rehecho: '+S.hist[S.hp].label);}
 function commit(label){stopPlay(true);pushHist(label);clampView();paintAll(true);updInfo();updSelPeak();}
@@ -1491,10 +1742,11 @@ function editRange(label,a,b,fn){
   for(const ci of chIdx()){const cp=(ci?S.R:S.L).slice();fn(cp,a,b,ci);if(ci)R=cp;else L=cp;}
   S.L=L;S.R=R;commit(label);
 }
-function doTrim(){if(!needSel()||!needBoth('Recortar'))return;const a=S.a,b=S.b;S.L=S.L.slice(a,b);S.R=S.R.slice(a,b);S.a=S.b=0;S.cur=0;S.vs=0;commit('Recortar');fitAll();}
+function doTrim(){if(!needSel()||!needBoth('Recortar'))return;const a=S.a,b=S.b;mkTrim(a,b);S.L=S.L.slice(a,b);S.R=S.R.slice(a,b);S.a=S.b=0;S.cur=0;S.vs=0;commit('Recortar');fitAll();}
 function doDelete(cut){
   if(!needSel()||!needBoth(cut?'Cortar':'Borrar'))return;const a=S.a,b=S.b;
   if(cut)copyClip(true);
+  mkRemove(a,b);
   const n=len();const L=new Float32Array(n-(b-a)),R=new Float32Array(n-(b-a));L.set(S.L.subarray(0,a));L.set(S.L.subarray(b),a);R.set(S.R.subarray(0,a));R.set(S.R.subarray(b),a);
   S.L=L;S.R=R;S.cur=a;S.a=S.b=a;commit(cut?'Cortar':'Borrar');
   toast((cut?'Cortado ':'Borrado ')+fmtT(b-a,S.sr,2)+' s · los extremos se han unido'+(cut?' · coloca el cursor y pulsa Pegar':''));
@@ -1507,7 +1759,7 @@ function doPaste(){
   if(!len()){S.L=cl.L.slice();S.R=cl.R.slice();S.sr=cl.sr;S.name='Pegado';S.a=S.b=0;S.cur=0;commit('Pegar');fitAll();return;}
   const at=hasSel()?S.a:S.cur;
   if(S.ch==='LR'){
-    const b=hasSel()?S.b:S.cur,n=len(),m=cl.L.length,N=n-(b-at)+m;const L=new Float32Array(N),R=new Float32Array(N);
+    const b=hasSel()?S.b:S.cur,n=len(),m=cl.L.length,N=n-(b-at)+m;if(b>at)mkRemove(at,b);mkShift(at,m);const L=new Float32Array(N),R=new Float32Array(N);
     L.set(S.L.subarray(0,at));L.set(cl.L,at);L.set(S.L.subarray(b),at+m);R.set(S.R.subarray(0,at));R.set(cl.R,at);R.set(S.R.subarray(b),at+m);
     S.L=L;S.R=R;S.a=at;S.b=at+m;S.cur=at;commit('Pegar');toast('Pegado '+fmtT(m,S.sr,2)+' s en '+fmtT(at,S.sr,2)+' s');
   }else{
@@ -1600,7 +1852,7 @@ function doChans(){
 function doInsSilence(){
   if(!needAudio())return;let d=1;
   openSheet('Insertar silencio',bd=>{bd.innerHTML='<div class="row"><span class="sm mut">Duración</span><input type="number" id="sD" value="1" min="0.01" max="600" step="0.1" style="width:100px"><span class="sm mut">s, en el cursor ('+fmtT(S.cur)+')</span></div>';$('#sD',bd).oninput=e=>d=+e.target.value;},
-   [{t:'Cancelar'},{t:'Insertar',pri:1,f:()=>{if(!needBoth('Insertar silencio')||!(d>0))return;const m=Math.round(d*S.sr),at=S.cur,n=len();const L=new Float32Array(n+m),R=new Float32Array(n+m);
+   [{t:'Cancelar'},{t:'Insertar',pri:1,f:()=>{if(!needBoth('Insertar silencio')||!(d>0))return;const m=Math.round(d*S.sr),at=S.cur,n=len();mkShift(at,m);const L=new Float32Array(n+m),R=new Float32Array(n+m);
      L.set(S.L.subarray(0,at));L.set(S.L.subarray(at),at+m);R.set(S.R.subarray(0,at));R.set(S.R.subarray(at),at+m);S.L=L;S.R=R;S.a=at;S.b=at+m;commit('Insertar silencio');}}]);
 }
 function selectAll(){if(!needAudio())return;setSel(0,len());}
@@ -1916,7 +2168,7 @@ $('#bFxApply').onclick=async()=>{
 };
 
 /* ====================== metadatos (ID3v2.3 en MP3, LIST/INFO + id3 en WAV) y portada ====================== */
-const MFIELDS=[['title','Título'],['artist','Artista'],['album','Álbum'],['albumArtist','Artista del álbum'],['year','Año'],['genre','Género'],['track','Pista (n o n/total)'],['disc','Disco (n o n/total)'],['composer','Compositor'],['bpm','BPM'],['comment','Comentario']];
+const MFIELDS=[['title','Título'],['artist','Artista'],['album','Álbum'],['albumArtist','Artista del álbum'],['year','Año'],['genre','Género'],['track','Pista (n o n/total)'],['disc','Disco (n o n/total)'],['composer','Compositor'],['bpm','BPM'],['key','Tonalidad'],['comment','Comentario']];
 const blankMeta=()=>Object.fromEntries(MFIELDS.map(f=>[f[0],'']));
 const EM={on:true,f:Object.assign(blankMeta(),LS.get('meta_e',{}))};                       /* exportación individual */
 const BM={on:true,auto:true,f:Object.assign(blankMeta(),LS.get('meta_b',{}))};   /* lote */
@@ -1931,7 +2183,7 @@ function id3Frame(id,data){return mcat([mAscii(id),mU32(data.length),new Uint8Ar
 const id3Txt=(id,t)=>id3Frame(id,mcat([Uint8Array.of(1),mU16(t)]));
 function buildID3(m,cover){
   const fr=[];const T=(id,v)=>{v=(v||'').toString().trim();if(v)fr.push(id3Txt(id,v));};
-  T('TIT2',m.title);T('TPE1',m.artist);T('TALB',m.album);T('TPE2',m.albumArtist);T('TYER',m.year);T('TCON',m.genre);T('TRCK',m.track);T('TPOS',m.disc);T('TCOM',m.composer);T('TBPM',m.bpm);
+  T('TIT2',m.title);T('TPE1',m.artist);T('TALB',m.album);T('TPE2',m.albumArtist);T('TYER',m.year);T('TCON',m.genre);T('TRCK',m.track);T('TPOS',m.disc);T('TCOM',m.composer);T('TBPM',m.bpm);T('TKEY',m.key);
   if((m.comment||'').trim())fr.push(id3Frame('COMM',mcat([Uint8Array.of(1),mAscii('eng'),mU16(''),Uint8Array.of(0,0),mU16(m.comment.trim())])));
   if(cover)fr.push(id3Frame('APIC',mcat([Uint8Array.of(0),mAscii('image/jpeg'),Uint8Array.of(0,3,0),cover])));
   if(!fr.length)return null;
@@ -1958,7 +2210,7 @@ function readTags(ab){
     const dec=(enc,b)=>{if(enc===1||enc===2){let le=enc===1?true:false,i=0;if(b[0]===0xFF&&b[1]===0xFE){le=true;i=2;}else if(b[0]===0xFE&&b[1]===0xFF){le=false;i=2;}let s='';for(;i+1<b.length;i+=2){const c=le?b[i]|(b[i+1]<<8):(b[i]<<8)|b[i+1];if(!c)break;s+=String.fromCharCode(c);}return s;}
       if(enc===3)return new TextDecoder('utf-8').decode(b).replace(/\0.*$/s,'');let s='';for(const c of b){if(!c)break;s+=String.fromCharCode(c);}return s;};
     const id3=(p,len)=>{const ver=u[p+3],flags=u[p+5];let q=p+10;const end=p+10+len;if(flags&0x40){const es=ver===4?((u[q]<<21)|(u[q+1]<<14)|(u[q+2]<<7)|u[q+3]):dv.getUint32(q);q+=ver===4?es:es+4;}
-      const map={TIT2:'title',TPE1:'artist',TALB:'album',TPE2:'albumArtist',TYER:'year',TDRC:'year',TCON:'genre',TRCK:'track',TPOS:'disc',TCOM:'composer',TBPM:'bpm'};
+      const map={TIT2:'title',TPE1:'artist',TALB:'album',TPE2:'albumArtist',TYER:'year',TDRC:'year',TCON:'genre',TRCK:'track',TPOS:'disc',TCOM:'composer',TBPM:'bpm',TKEY:'key'};
       while(q+10<=end&&u[q]){const id=String.fromCharCode(u[q],u[q+1],u[q+2],u[q+3]);const sz=ver===4?((u[q+4]<<21)|(u[q+5]<<14)|(u[q+6]<<7)|u[q+7]):dv.getUint32(q+4);if(!sz||q+10+sz>end)break;const d=u.subarray(q+10,q+10+sz);
         if(map[id]){let v=dec(d[0],d.subarray(1)).trim();if(id==='TDRC')v=v.slice(0,4);if(v&&!o.f[map[id]])o.f[map[id]]=v;}
         else if(id==='COMM'){const t=d.subarray(4);const enc=d[0];let i=0;if(enc===1||enc===2){while(i+1<t.length&&(t[i]||t[i+1]))i+=2;i+=2;}else{while(i<t.length&&t[i])i++;i++;}const v=dec(enc,t.subarray(i)).trim();if(v&&!o.f.comment)o.f.comment=v;}
@@ -2115,7 +2367,7 @@ function saveProjectFile(nm,light){
   const n=len(),fx=JSON.parse(JSON.stringify(FX));delete fx._mod;
   const cover=COVER.bytes?new Uint8Array(COVER.bytes):null;
   const hdr={v:1,lockA:!!S.lockA,lockB:!!S.lockB,app:'SampledHead Editor',ver:(window.__VER||''),name:S.name,sr:S.sr,n,bits:light?16:32,a:S.a,b:S.b,cur:S.cur,ch:S.ch,
-    stems:ST.tracks.map(t=>({id:t.id,name:t.name,col:t.col,mute:t.mute,solo:t.solo,gain:t.gain})),stemsSr:ST.sr,stemsN:ST.n,stemsBase:ST.base,
+    mk:MK(),stems:ST.tracks.map(t=>({id:t.id,name:t.name,col:t.col,mute:t.mute,solo:t.solo,gain:t.gain})),stemsSr:ST.sr,stemsN:ST.n,stemsBase:ST.base,stemsPart:ST.part||null,
     fx,meta:EM.f,metaOn:EM.on,coverLen:cover?cover.length:0,saved:new Date().toISOString()};
   const hb=new TextEncoder().encode(JSON.stringify(hdr));
   const head=new Uint8Array(12+hb.length+((4-(12+hb.length)%4)%4));
@@ -2156,9 +2408,10 @@ async function openProjectFile(file){
     if(h.stems&&h.stems.length&&h.stemsN>0&&off+h.stems.length*2*h.stemsN*bytes<=ab.byteLength){
       const ld=()=>{let f;if(h.bits===16){const q=new Int16Array(ab.slice(off,off+h.stemsN*2));f=new Float32Array(h.stemsN);for(let i=0;i<f.length;i++)f[i]=q[i]/32767;}else f=new Float32Array(ab.slice(off,off+h.stemsN*4));off+=h.stemsN*bytes;return f;};
       for(const m of h.stems){const l=ld(),r=ld();const t=stmMakeTrack(m.id,m.name,m.col,l,r,h.stemsSr||S.sr);t.mute=!!m.mute;t.solo=!!m.solo;t.gain=m.gain==null?1:m.gain;ST.tracks.push(t);}
-      ST.sr=h.stemsSr||S.sr;ST.n=h.stemsN;ST.base=h.stemsBase||baseName(S.name)||'audio';ST.pos=0;stmRender();stmUpdInfo();}
+      ST.sr=h.stemsSr||S.sr;ST.n=h.stemsN;ST.base=h.stemsBase||baseName(S.name)||'audio';ST.part=h.stemsPart||null;ST.pos=0;stmRender();stmUpdInfo();}
     if(window.__metaERender)__metaERender();
     if('lockA' in h)setLock(h.lockA,h.lockB,true);else if(typeof h.lock==='boolean')setLock(h.lock,h.lock,true);
+    S.mk=Array.isArray(h.mk)?h.mk.map(m=>({p:m.p|0,n:String(m.n||'Marcador'),c:m.c||'#ff7ab8'})):[];
     commit('Abrir proyecto');fitAll();showTab('edit');
     toast('Proyecto abierto: '+(S.name||file.name)+' · '+fmtT(n,S.sr,1)+' s (Deshacer recupera el anterior)');
   }catch(e){console.error(e);toast(e.message||'No se pudo abrir el proyecto',true);}
@@ -2242,7 +2495,7 @@ function stmGroups(){
 async function stmSeparate(){
   if(S.busy)return;if(!len()){toast('No hay audio que separar',true);return;}
   const groups=stmGroups();if(!groups.length){toast('Elige al menos una pista',true);return;}
-  if(ST.tracks.length&&!confirm('Ya hay stems en el proyecto. ¿Sustituirlos por la nueva separación?'))return;
+  if(ST.tracks.length&&!confirm(T('Ya hay stems en el proyecto. ¿Sustituirlos por la nueva separación?')))return;
   stmStop();ST.cancel=false;let stage='preparar';
   try{
     setBusy('Preparando el motor de IA…',0.02,()=>{ST.cancel=true;});await stmLoadOrt();
@@ -2256,7 +2509,8 @@ async function stmSeparate(){
     catch(e){stage='cargar el modelo';throw e;}
     u8=null;
     /* entrada a 44,1 kHz */
-    let XL=S.L,XR=S.R;if(S.sr!==STM.SR){setBusy('Remuestreando a 44,1 kHz…',0.04,()=>{ST.cancel=true;});const o=await resample([S.L,S.R],S.sr,STM.SR);XL=o[0];XR=o[1];}
+    const pa=($('#stmPart')&&$('#stmPart').value==='sel'&&hasSel())?S.a:0,pb=($('#stmPart')&&$('#stmPart').value==='sel'&&hasSel())?S.b:len();
+    let XL=S.L.subarray(pa,pb),XR=S.R.subarray(pa,pb);if(S.sr!==STM.SR){setBusy('Remuestreando a 44,1 kHz…',0.04,()=>{ST.cancel=true;});const o=await resample([XL,XR],S.sr,STM.SR);XL=o[0];XR=o[1];}
     const n=XL.length,N=STM.N,ov=Math.floor(N/4),stride=N-ov;
     const nCh=Math.max(1,Math.ceil((n-ov)/stride)),w=new Float32Array(N);
     for(let i=0;i<N;i++){const a=Math.min(1,(i+1)/(ov+1),(N-i)/(ov+1));w[i]=a;}
@@ -2282,7 +2536,7 @@ async function stmSeparate(){
       if(S.sr!==STM.SR){setBusy('Ajustando la frecuencia de «'+groups[gi].name+'»…',0.97,()=>{ST.cancel=true;});const o=await resample([l,r],STM.SR,S.sr);l=o[0];r=o[1];}
       tracks.push(stmMakeTrack(groups[gi].id,groups[gi].name,groups[gi].col,l,r,S.sr));
     }
-    ST.tracks=tracks;ST.sr=S.sr;ST.n=tracks[0].buf.length;ST.base=baseName(S.name)||'audio';
+    ST.tracks=tracks;ST.sr=S.sr;ST.n=tracks[0].buf.length;ST.base=baseName(S.name)||'audio';ST.part=(pa>0||pb<len())?{a:pa,b:pb}:null;ST.sa=ST.sb=null;ST.bak=null;
     stmRender();stmUpdInfo();stmModelInfo();setBusy(null);
     toast('Listo: '+tracks.length+' pista'+(tracks.length>1?'s':'')+' separada'+(tracks.length>1?'s':'')+' en '+fmtDur((performance.now()-t0)/1000));
   }catch(e){setBusy(null);console.error(e);const m=String((e&&e.message)||e);
@@ -2325,7 +2579,7 @@ function stmPlayheads(){const f=ST.n?ST.pos*ST.sr/ST.n:0;$$('#stmList .ph').forE
 function stmUpdInfo(){
   const has=ST.tracks.length>0;
   $('#stmMixCard').style.display=has?'':'none';
-  $('#stmInfo').textContent=has?('Stems de «'+ST.base+'»: '+ST.tracks.length+' pistas · '+fmtT(ST.n,ST.sr,1)+' s'):'Todavía no hay stems en este proyecto.';
+  $('#stmInfo').textContent=has?('Stems de «'+ST.base+'»: '+ST.tracks.length+' pistas · '+fmtT(ST.n,ST.sr,1)+' s'+(ST.part?' (solo la parte '+fmtT(ST.part.a,ST.sr,1)+' – '+fmtT(ST.part.b,ST.sr,1)+')':'')):'Todavía no hay stems en este proyecto.';
 }
 function stmRender(){
   const box=$('#stmList');box.innerHTML='';
@@ -2337,12 +2591,18 @@ function stmRender(){
     const upd=()=>{bm.classList.toggle('on',t.mute);bs.classList.toggle('on',t.solo);d.classList.toggle('off',!stmAudible(t));stmApplyGains();$$('#stmList .strk').forEach((e,k)=>e.classList.toggle('off',!stmAudible(ST.tracks[k])));};
     bm.onclick=()=>{t.mute=!t.mute;upd();};bs.onclick=()=>{t.solo=!t.solo;upd();};
     rg.value=Math.round(t.gain*100);sx.textContent=rg.value+'%';rg.oninput=()=>{t.gain=rg.value/100;sx.textContent=rg.value+'%';stmApplyGains();};
-    const cv=d.querySelector('canvas');cv.onclick=e=>{const r=cv.getBoundingClientRect();stmSeek((e.clientX-r.left)/r.width*ST.n/ST.sr);};
+    const cv=d.querySelector('canvas');cv.style.touchAction='pan-y';
+    {let x0=null,drag=false;const tt=e=>{const r=cv.getBoundingClientRect();return clamp((e.clientX-r.left)/r.width,0,1)*ST.n/ST.sr;};
+     cv.onpointerdown=e=>{x0=e.clientX;drag=false;ST._a0=tt(e);try{cv.setPointerCapture(e.pointerId);}catch(_){}};
+     cv.onpointermove=e=>{if(x0==null)return;if(!drag&&Math.abs(e.clientX-x0)<5)return;drag=true;const t=tt(e);ST.sa=Math.min(ST._a0,t);ST.sb=Math.max(ST._a0,t);stmPaint();stmSelInfo();};
+     cv.onpointerup=e=>{if(x0==null)return;if(!drag){ST.sa=ST.sb=null;stmSeek(tt(e));stmPaint();stmSelInfo();}x0=null;};
+     cv.onpointercancel=()=>{x0=null;};}
     box.appendChild(d);t._d=d;t._cv=cv;upd();
   });
   requestAnimationFrame(stmPaint);stmUpdPlay();
 }
-function stmPaint(){for(const t of ST.tracks){const cv=t._cv;if(!cv)continue;const w=cv.clientWidth||300,h=cv.clientHeight||44,dp=window.devicePixelRatio||1;cv.width=w*dp;cv.height=h*dp;const g=cv.getContext('2d');g.scale(dp,dp);g.fillStyle=t.col;g.globalAlpha=.9;const p=t.peaks,m=h/2;for(let x=0;x<w;x++){const v=p[Math.min(p.length-1,Math.floor(x/w*p.length))];const hh=Math.max(1,v*m*0.95);g.fillRect(x,m-hh,1,hh*2);}}}
+function stmPaint(){for(const t of ST.tracks){const cv=t._cv;if(!cv)continue;const w=cv.clientWidth||300,h=cv.clientHeight||44,dp=window.devicePixelRatio||1;cv.width=w*dp;cv.height=h*dp;const g=cv.getContext('2d');g.scale(dp,dp);g.fillStyle=t.col;g.globalAlpha=.9;const p=t.peaks,m=h/2;for(let x=0;x<w;x++){const v=p[Math.min(p.length-1,Math.floor(x/w*p.length))];const hh=Math.max(1,v*m*0.95);g.fillRect(x,m-hh,1,hh*2);}
+    if(ST.sb>ST.sa&&ST.n){g.globalAlpha=1;g.fillStyle='rgba(255,255,255,.22)';const xa=ST.sa*ST.sr/ST.n*w,xb=ST.sb*ST.sr/ST.n*w;g.fillRect(xa,0,xb-xa,h);g.fillStyle='#fff';g.fillRect(xa,0,1.5,h);g.fillRect(xb-1.5,0,1.5,h);}}}
 function stmInit(){
   const g=$('#stmChecks');
   g.innerHTML=STM.ORDER.map(k=>'<label class="chk"><input type="checkbox" id="stk_'+k+'" '+(k==='drums'?'checked':'')+'> <span>'+STM.NAMES[k]+'</span></label>').join('')+'<label class="chk" style="margin-top:4px"><input type="checkbox" id="stmRest" checked> <span>Añadir «Resto» (todo lo demás, para que la suma sea la mezcla)</span></label>';
@@ -2355,20 +2615,25 @@ function stmInit(){
   $('#stmStop').onclick=()=>{stmStop(true);ST.pos=0;stmUpdPlay();stmPlayheads();};
   $('#stmPos').oninput=e=>stmSeek(e.target.value/10);
   $('#stmToEd').onclick=stmToEditor;$('#stmExp').onclick=stmExportDlg;$('#stmBat').onclick=stmToBatchDlg;
-  $('#stmClear').onclick=()=>{if(confirm('¿Quitar los stems del proyecto?'))stemsClear();};
+  $('#stmClear').onclick=()=>{if(confirm(T('¿Quitar los stems del proyecto?')))stemsClear();};
   $('#stmDelModel').onclick=async()=>{try{await caches.delete(STM.CACHE);}catch(e){}ST.mem=null;stmModelInfo();toast('Modelo borrado del dispositivo');};
   $('#stmFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const b=await f.arrayBuffer();await stmStore(b);stmModelInfo();toast('Modelo cargado desde el archivo');}catch(er){toast('No se pudo guardar el modelo',true);}};
   $('#stmLoadFile').onclick=()=>$('#stmFile').click();
   stmUpdInfo();stmModelInfo();
 }
 async function stmModelInfo(){const h=await stmHas();$('#stmModel').textContent=h?'Modelo de IA: guardado en este dispositivo (funciona sin conexión).':'Modelo de IA: se descargará la primera vez (≈ 136 MB) y quedará guardado.';$('#stmDelModel').style.display=h?'':'none';}
-function stemsClear(){stmStop(true);ST.tracks=[];ST.pos=0;ST.n=0;if($('#stmList')){$('#stmList').innerHTML='';stmUpdInfo();}}
+function stemsClear(){stmStop(true);ST.tracks=[];ST.part=null;ST.sa=ST.sb=null;ST.bak=null;ST.pos=0;ST.n=0;if($('#stmList')){$('#stmList').innerHTML='';stmUpdInfo();}}
 
 /* ---------- salidas ---------- */
 function stmMix(){const n=ST.n,L=new Float32Array(n),R=new Float32Array(n);for(const t of ST.tracks){if(!stmAudible(t))continue;const a=t.buf.getChannelData(0),b=t.buf.getChannelData(1),g=t.gain;for(let i=0;i<n;i++){L[i]+=a[i]*g;R[i]+=b[i]*g;}}return [L,R];}
 function stmToEditor(){
   if(S.busy||!ST.tracks.length)return;if(!ST.tracks.some(stmAudible)){toast('Todas las pistas están silenciadas',true);return;}
   stmStop(true);const [L,R]=stmMix();stopPlay(true);
+  if(ST.part&&len()>=ST.part.b&&S.sr===ST.sr&&L.length===ST.part.b-ST.part.a){
+    const pt=ST.part;openSheet('Mezcla de stems',bd=>{bd.innerHTML='<div class="hint">Los stems son solo de la parte '+fmtT(pt.a,S.sr,1)+' – '+fmtT(pt.b,S.sr,1)+' del proyecto. ¿Qué quieres hacer con la mezcla?</div>';},[{t:'Cancelar'},{t:'Proyecto nuevo',f:()=>stmToEditorNew(L,R)},{t:'Sustituir esa parte',pri:1,f:()=>{const NL=S.L.slice(),NR=S.R.slice();NL.set(L,pt.a);NR.set(R,pt.a);S.L=NL;S.R=NR;S.a=pt.a;S.b=pt.b;commit('Sustituir parte por la mezcla de stems');showTab('edit');toast('Parte sustituida por la mezcla de los stems (se puede deshacer)');}}]);return;}
+  stmToEditorNew(L,R);
+}
+function stmToEditorNew(L,R){
   S.L=L;S.R=R;S.sr=ST.sr;S.name=ST.base+' (mezcla de stems)';S.a=S.b=S.cur=0;S.vs=0;
   const e=$('#expName');if(e){delete e.dataset.user;e.value='';}
   commit('Mezcla de stems');fitAll();showTab('edit');toast('La mezcla de los stems audibles está en el editor (se puede deshacer)');
@@ -2414,6 +2679,554 @@ function stmToBatchDlg(){
 }
 ACT.stems=()=>showTab('stm');
 stmInit();
+
+/* ---- v1.16: selección y cortes en todas las pistas ---- */
+function stmSelInfo(){const e=$('#stmSelI');if(!e)return;const ok=ST.sb>ST.sa;e.textContent=ok?('Selección: '+fmtT(Math.round(ST.sa*ST.sr),ST.sr,2)+' – '+fmtT(Math.round(ST.sb*ST.sr),ST.sr,2)+' ('+(ST.sb-ST.sa).toFixed(2)+' s)'):'Arrastra sobre una onda para seleccionar un trozo; un toque = ir a ese punto.';
+  for(const id of ['#stmTrim','#stmDel'])if($(id))$(id).disabled=!ok;if($('#stmUndoCut'))$('#stmUndoCut').disabled=!ST.bak;}
+function stmCut(keep){
+  if(!(ST.sb>ST.sa)){toast('Selecciona un trozo arrastrando sobre una onda',true);return;}
+  stmStop(true);const a=Math.round(ST.sa*ST.sr),b=Math.min(ST.n,Math.round(ST.sb*ST.sr));
+  if(!keep&&b-a>=ST.n){toast('Eso borraría todo',true);return;}
+  ST.bak={tracks:ST.tracks.map(t=>({buf:t.buf,peaks:t.peaks})),n:ST.n,part:ST.part};
+  for(const t of ST.tracks){const c0=t.buf.getChannelData(0),c1=t.buf.getChannelData(1);let l,r;
+    if(keep){l=c0.slice(a,b);r=c1.slice(a,b);}else{l=new Float32Array(ST.n-(b-a));r=new Float32Array(l.length);l.set(c0.subarray(0,a));l.set(c0.subarray(b),a);r.set(c1.subarray(0,a));r.set(c1.subarray(b),a);}
+    const nt=stmMakeTrack(t.id,t.name,t.col,l,r,ST.sr);t.buf=nt.buf;t.peaks=nt.peaks;}
+  ST.n=ST.tracks[0].buf.length;ST.part=null;ST.pos=0;ST.sa=ST.sb=null;stmUpdInfo();stmTime();stmPaint();stmSelInfo();stmUpdPlay();
+  toast((keep?'Todas las pistas recortadas a la selección':'Trozo borrado en todas las pistas')+' · puedes deshacerlo');
+}
+function stmUndoCut(){const k=ST.bak;if(!k)return;stmStop(true);ST.tracks.forEach((t,i)=>{t.buf=k.tracks[i].buf;t.peaks=k.tracks[i].peaks;});ST.n=k.n;ST.part=k.part;ST.bak=null;ST.pos=0;stmUpdInfo();stmTime();stmPaint();stmSelInfo();stmUpdPlay();toast('Corte deshecho');}
+function stmFillPart(){const s=$('#stmPart');if(!s)return;const cur=s.value;s.innerHTML='<option value="all">Todo el proyecto</option>'+(hasSel()?'<option value="sel">Solo la selección del editor ('+fmtT(S.b-S.a,S.sr,1)+' s)</option>':'');s.value=[...s.options].some(o=>o.value===cur)?cur:(hasSel()?'sel':'all');}
+$('#stmTrim').onclick=()=>stmCut(true);$('#stmDel').onclick=()=>stmCut(false);$('#stmUndoCut').onclick=stmUndoCut;stmSelInfo();
+
+/* ===== v1.16: puente con SampledHeadApp (bandeja compartida en IndexedDB 'sh-bridge', mismo dominio) ===== */
+const BRG={_db:null,
+  open(){return this._db||(this._db=new Promise((ok,ko)=>{const q=indexedDB.open('sh-bridge',1);q.onupgradeneeded=()=>{q.result.createObjectStore('kv');};q.onsuccess=()=>ok(q.result);q.onerror=()=>ko(q.error);}));},
+  async get(k){const d=await this.open();return new Promise((ok,ko)=>{const r=d.transaction('kv').objectStore('kv').get(k);r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error);});},
+  async set(k,v){const d=await this.open();return new Promise((ok,ko)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>ok();t.onerror=()=>ko(t.error);});},
+  async del(k){const d=await this.open();return new Promise((ok,ko)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').delete(k);t.oncomplete=()=>ok();t.onerror=()=>ko(t.error);});}};
+const BRG_MAX=600; /* segundos: aviso a partir de aquí */
+function brgSelfUrl(){return new URL('./',location.href).href;}
+async function brgRegister(){try{await BRG.set('url:editor',brgSelfUrl());}catch(e){}}
+/* abre el sampler en otra pestaña; si no se conoce su dirección, la pide una vez */
+async function brgOpenSampler(){
+  let u=null;try{u=await BRG.get('url:sampler');}catch(e){}
+  if(u){window.open(u,'_blank');return;}
+  openSheet('Dirección del sampler',bd=>{
+    bd.innerHTML='<div class="hint">El sampler guarda su dirección la primera vez que lo abres con la versión nueva (1.58). Si aún no lo has hecho, pégala aquí (debe ser del mismo usuario de GitHub Pages que el editor).</div><input type="url" id="brgU" style="width:100%;margin-top:8px" placeholder="https://usuario.github.io/sampler/">';
+    $('#brgU',bd).value=LS.get('samplerUrl','');
+  },[{t:'Cancelar'},{t:'Abrir',pri:1,f:async()=>{const v=$('#brgU').value.trim();if(!/^https?:\/\//i.test(v)){toast('Dirección no válida',true);return false;}LS.set('samplerUrl',v);try{await BRG.set('url:sampler',v);}catch(e){}window.open(v,'_blank');}}]);
+}
+function doToSampler(){
+  if(S.busy||!len()){if(!len())toast('No hay audio',true);return;}
+  openSheet('Enviar al sampler',bd=>{
+    bd.innerHTML='<label class="hint">Qué enviar</label><select id="tsSrc" style="width:100%"></select>'+
+     '<label class="hint" style="margin-top:8px">Cadena de máster</label><select id="tsFx" style="width:100%"><option value="1">Con la cadena de máster actual</option><option value="0">Sin cadena de máster</option></select>'+
+     '<div class="hint" style="margin-top:8px">El audio se deja en la bandeja compartida (WAV 24 bit) y se abre el sampler, que lo carga en el primer pad libre. Las dos apps deben estar en el mismo dominio.</div>';
+    const s=$('#tsSrc',bd);const o1=el('option');o1.value='all';o1.textContent='Todo el proyecto ('+fmtT(len(),S.sr,1)+' s)';s.appendChild(o1);
+    if(hasSel()){const o=el('option');o.value='sel';o.textContent='Selección ('+fmtT(S.b-S.a,S.sr,1)+' s)';s.appendChild(o);s.value='sel';}
+    $('#tsFx',bd).value=(S.fxOn&&fxActive())?'1':'0';
+  },[{t:'Cancelar'},{t:'Enviar y abrir el sampler',pri:1,f:async()=>{
+    const sel=$('#tsSrc').value==='sel',fx=$('#tsFx').value==='1',a=sel?S.a:0,b=sel?S.b:len();
+    try{
+      let L,R;
+      if(fx&&fxActive()){setBusy('Procesando con la cadena de máster…',0);const o=await renderFx(S.L,S.R,a,b,S.sr,Object.assign(dspParams(),{bypass:0}),p=>setBusy('Procesando con la cadena de máster…',p));L=o[0];R=o[1];}
+      else{L=S.L.slice(a,b);R=S.R.slice(a,b);}
+      setBusy('Creando el WAV…',0.8);await sleep(10);
+      const blob=encodeWav([L,R],S.sr,24,false),buf=await blob.arrayBuffer();
+      const nm=(baseName(S.name)||'audio')+(sel?' (selección)':'')+(fx&&fxActive()?' (master)':'');
+      await BRG.set('toSampler',{name:nm,wav:buf,sr:S.sr,ts:Date.now(),secs:L.length/S.sr});
+      setBusy(null);toast('Enviado a la bandeja: '+nm+' · '+fmtT(L.length,S.sr,1)+' s');
+      brgOpenSampler();
+    }catch(e){setBusy(null);console.error(e);toast('No se pudo enviar: '+(e.message||e),true);}}}]);
+}
+/* recoger lo que haya mandado el sampler */
+async function brgDecode(buf){const oc=new OfflineAudioContext(2,1,44100);const ab=await oc.decodeAudioData(buf.slice(0));const L=ab.getChannelData(0).slice();const R=(ab.numberOfChannels>1?ab.getChannelData(1):ab.getChannelData(0)).slice();return {L,R,sr:ab.sampleRate};}
+async function brgPickup(auto){
+  let it=null;try{it=await BRG.get('toEditor');}catch(e){}
+  if(!it){if(!auto)toast('El sampler no ha mandado nada todavía',true);return;}
+  openSheet('Audio del sampler',bd=>{bd.innerHTML='<div class="hint">«'+(it.name||'audio').replace(/[<>&]/g,'')+'» · '+fmtT(Math.round((it.secs||0)*(it.sr||44100)),it.sr||44100,1)+' s</div>';},
+    [{t:'Ignorar',f:async()=>{await BRG.del('toEditor');}},
+     {t:'Añadir al final',f:async()=>{await brgLoad(it,'end');}},
+     {t:'Abrir como proyecto nuevo',pri:1,f:async()=>{await brgLoad(it,'new');}}]);
+}
+async function brgLoad(it,dst){
+  try{setBusy('Leyendo el audio del sampler…',0.3);const d=await brgDecode(it.wav);await BRG.del('toEditor');setBusy(null);await placeAudio(d.L,d.R,d.sr,it.name||'Del sampler',dst);}
+  catch(e){setBusy(null);toast('No se pudo leer el audio del sampler',true);}
+}
+async function brgCheck(){try{const it=await BRG.get('toEditor');if(it&&!S.busy&&!$('#sheet.on'))brgPickup(true);}catch(e){}}
+ACT.tosampler=doToSampler;ACT.fromsampler=()=>brgPickup(false);
+brgRegister();setTimeout(brgCheck,1200);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)brgCheck();});
+
+/* ===== v1.16: análisis (FFT, acordes, tonalidad, tempo, espectrograma) y limpieza (ruido, silencios) ===== */
+const _fftP={};
+function fftPlan(n){let p=_fftP[n];if(p)return p;const rev=new Uint32Array(n);let lg=0;while((1<<lg)<n)lg++;for(let i=0;i<n;i++){let r=0;for(let b=0;b<lg;b++)if(i&(1<<b))r|=1<<(lg-1-b);rev[i]=r;}
+  const c=new Float64Array(n/2),s=new Float64Array(n/2);for(let i=0;i<n/2;i++){c[i]=Math.cos(2*Math.PI*i/n);s[i]=-Math.sin(2*Math.PI*i/n);}return _fftP[n]={rev,c,s};}
+function fft(re,im){const n=re.length,{rev,c,s}=fftPlan(n);
+  for(let i=0;i<n;i++){const j=rev[i];if(j>i){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t;}}
+  for(let size=2;size<=n;size<<=1){const h=size>>1,st=n/size;for(let i=0;i<n;i+=size){for(let j=0,k=0;j<h;j++,k+=st){const a=i+j,b=a+h,tr=re[b]*c[k]-im[b]*s[k],ti=re[b]*s[k]+im[b]*c[k];re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti;}}}}
+function ifft(re,im){const n=re.length;for(let i=0;i<n;i++)im[i]=-im[i];fft(re,im);for(let i=0;i<n;i++){re[i]/=n;im[i]=-im[i]/n;}}
+function hann(n){const w=new Float64Array(n);for(let i=0;i<n;i++)w[i]=0.5-0.5*Math.cos(2*Math.PI*i/n);return w;}
+/* mono a ≈ 11 kHz (promedio por cajas) del tramo [a,b) */
+function monoDown(L,R,sr,a,b,target){target=target||11025;const f=Math.max(1,Math.round(sr/target)),n=Math.floor((b-a)/f),x=new Float32Array(n);
+  for(let i=0;i<n;i++){let s=0;const o=a+i*f;for(let j=0;j<f;j++)s+=L[o+j]+R[o+j];x[i]=s/(2*f);}return {x,sr:sr/f};}
+const NOTE_S=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],NOTE_F=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+/* --- croma --- */
+function chromaFrames(x,sr,opt){opt=opt||{};const N=4096,hop=opt.hop||2048,w=hann(N),re=new Float64Array(N),im=new Float64Array(N);
+  const nf=Math.max(0,Math.floor((x.length-N)/hop)+1),C=new Float32Array(nf*12),E=new Float32Array(nf);
+  const k0=Math.max(1,Math.ceil(60*N/sr)),k1=Math.min(N/2-1,Math.floor(2500*N/sr));
+  const pcs=new Int8Array(k1+1),wt=new Float32Array(k1+1);
+  for(let k=k0;k<=k1;k++){const m=69+12*Math.log2((k*sr/N)/440),r=Math.round(m),dv=Math.abs(m-r);pcs[k]=((r%12)+12)%12;wt[k]=Math.max(0,1-dv*2.2)*(k*sr/N<500?1:500/(k*sr/N)**0.5/Math.sqrt(500));}
+  for(let f=0;f<nf;f++){const o=f*hop;for(let i=0;i<N;i++){re[i]=x[o+i]*w[i];im[i]=0;}fft(re,im);
+    let tot=0;const c=C.subarray(f*12,f*12+12);
+    for(let k=k0;k<=k1;k++){const m=Math.sqrt(re[k]*re[k]+im[k]*im[k]);if(wt[k]>0){c[pcs[k]]+=Math.sqrt(m)*wt[k];}tot+=m;}
+    let nr=0;for(let i=0;i<12;i++)nr+=c[i]*c[i];nr=Math.sqrt(nr)||1;for(let i=0;i<12;i++)c[i]/=nr;E[f]=tot;}
+  return {C,E,nf,hop,N,sr,hopSec:hop/sr};}
+/* --- tonalidad (Krumhansl-Schmuckler) --- */
+const KS_MAJ=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88],KS_MIN=[6.33,2.68,3.52,5.38,2.60,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+function corr(a,b){let ma=0,mb=0;for(let i=0;i<12;i++){ma+=a[i];mb+=b[i];}ma/=12;mb/=12;let n=0,da=0,db=0;for(let i=0;i<12;i++){const x=a[i]-ma,y=b[i]-mb;n+=x*y;da+=x*x;db+=y*y;}return n/Math.sqrt(da*db||1);}
+function keyFromChroma(ch){const sum=new Float64Array(12),nf=ch.nf;for(let f=0;f<nf;f++)for(let i=0;i<12;i++)sum[i]+=ch.C[f*12+i];
+  let best={s:-2};for(let r=0;r<12;r++){const rot=i=>sum[(i+r)%12];const a=[],b=[];for(let i=0;i<12;i++){a.push(rot(i));}
+    for(const [prof,mode] of [[KS_MAJ,'M'],[KS_MIN,'m']]){const s=corr(a,prof);if(s>best.s)best={s,root:r,mode};}}
+  const flats=best.mode==='M'?[5,10,3,8,1,6].includes(best.root):[2,7,0,5,10,3].includes(best.root);
+  const nm=(flats?NOTE_F:NOTE_S)[best.root];return {root:best.root,mode:best.mode,flats,name:nm+(best.mode==='m'?'m':''),label:nm+(best.mode==='m'?' menor':' mayor'),conf:best.s};}
+/* --- acordes --- */
+const CH_TYPES=[{id:'',n:[0,4,7],w:[1,.85,.85],cost:0},{id:'m',n:[0,3,7],w:[1,.85,.85],cost:0},{id:'7',n:[0,4,7,10],w:[1,.8,.8,.6],cost:.035},{id:'maj7',n:[0,4,7,11],w:[1,.8,.8,.6],cost:.045},
+  {id:'m7',n:[0,3,7,10],w:[1,.8,.8,.6],cost:.035},{id:'dim',n:[0,3,6],w:[1,.85,.85],cost:.06},{id:'sus4',n:[0,5,7],w:[1,.85,.85],cost:.05},{id:'sus2',n:[0,2,7],w:[1,.85,.85],cost:.055},{id:'5',n:[0,7],w:[1,.9],cost:.05}];
+const CH_TPL=[];for(const t of CH_TYPES){const v=new Float64Array(12);t.n.forEach((p,i)=>v[p]=t.w[i]);let nr=0;for(const x of v)nr+=x*x;nr=Math.sqrt(nr);CH_TPL.push({v:v.map(x=>x/nr),cost:t.cost});}
+function chordName(root,tid,flats){return (flats?NOTE_F:NOTE_S)[root]+tid;}
+function chordNotes(root,tid){const t=CH_TYPES.find(x=>x.id===tid);return t.n.map(p=>(root+p)%12);}
+function detectChords(ch,opt){opt=opt||{};const pen=opt.pen==null?0.22:opt.pen,T=CH_TYPES.length,NS=12*T+1,nf=ch.nf;if(!nf)return [];
+  const flats=!!opt.flats;const sorted=Array.from(ch.E).sort((a,b)=>a-b),med=sorted[Math.floor(nf/2)]||1,thr=med*0.12;
+  const emis=new Float32Array(nf*NS);
+  for(let f=0;f<nf;f++){const c=ch.C.subarray(f*12,f*12+12);const o=f*NS;
+    for(let r=0;r<12;r++)for(let t=0;t<T;t++){const v=CH_TPL[t].v;let s=0;for(let i=0;i<12;i++)s+=c[(i+r)%12]*v[i];emis[o+r*T+t]=s-CH_TPL[t].cost;}
+    emis[o+12*T]=ch.E[f]<thr?0.9:0.3;}
+  const delta=new Float32Array(NS),nd=new Float32Array(NS),bp=new Int16Array(nf*NS);
+  for(let s=0;s<NS;s++)delta[s]=emis[s];
+  for(let f=1;f<nf;f++){let bi=0,bv=-1e9;for(let s=0;s<NS;s++)if(delta[s]>bv){bv=delta[s];bi=s;}
+    for(let s=0;s<NS;s++){const stay=delta[s],sw=bv-pen;if(stay>=sw){nd[s]=stay+emis[f*NS+s];bp[f*NS+s]=s;}else{nd[s]=sw+emis[f*NS+s];bp[f*NS+s]=bi;}}
+    delta.set(nd);}
+  let s=0,bv=-1e9;for(let i=0;i<NS;i++)if(delta[i]>bv){bv=delta[i];s=i;}
+  const path=new Int16Array(nf);for(let f=nf-1;f>=0;f--){path[f]=s;s=bp[f*NS+s];}
+  const segs=[];let a=0;for(let f=1;f<=nf;f++){if(f===nf||path[f]!==path[a]){const st=path[a];segs.push({t0:a*ch.hopSec,t1:f*ch.hopSec,st});a=f;}}
+  const out=[];for(const g of segs){if(g.st===12*T){out.push({t0:g.t0,t1:g.t1,root:-1,type:'',label:'—'});continue;}
+    const root=Math.floor(g.st/T),tid=CH_TYPES[g.st%T].id;out.push({t0:g.t0,t1:g.t1,root,type:tid,label:chordName(root,tid,flats)});}
+  /* tramos muy cortos: se funden con el vecino anterior */
+  const min=opt.min||0.35,res=[];for(const g of out){const p=res[res.length-1];if(p&&(g.t1-g.t0<min||p.label===g.label)){p.t1=g.t1;}else res.push({...g});}
+  return res;}
+/* --- tempo (autocorrelación del flujo espectral) --- */
+function detectTempo(x,sr){const N=512,hop=128,w=hann(N),re=new Float64Array(N),im=new Float64Array(N);const nf=Math.floor((x.length-N)/hop)+1;if(nf<200)return null;
+  const env=new Float32Array(nf);let prev=new Float32Array(N/2);const mag=new Float32Array(N/2);
+  for(let f=0;f<nf;f++){const o=f*hop;for(let i=0;i<N;i++){re[i]=x[o+i]*w[i];im[i]=0;}fft(re,im);let fl=0;for(let k=2;k<N/2;k++){mag[k]=Math.log(1+60*Math.sqrt(re[k]*re[k]+im[k]*im[k]));const d=mag[k]-prev[k];if(d>0)fl+=d;}env[f]=fl;prev.set(mag);}
+  let m=0;for(const v of env)m+=v;m/=nf;const e2=new Float32Array(nf);for(let i=0;i<nf;i++){e2[i]=Math.max(0,env[i]-m);}
+  const fps=sr/hop,lmin=Math.floor(fps*60/200),lmax=Math.ceil(fps*60/60),ac=new Float64Array(lmax*4+2);
+  for(let l=lmin;l<ac.length;l++){let s=0;for(let i=0;i+l<nf;i++)s+=e2[i]*e2[i+l];ac[l]=s/(nf-l);}
+  let best=0,bl=0;for(let l=lmin;l<=lmax;l++){const bpm=60*fps/l;const prior=Math.exp(-0.5*Math.pow(Math.log2(bpm/115)/0.75,2));const sc=(ac[l]+0.5*ac[l*2]+0.25*ac[l*4])*prior;if(sc>best){best=sc;bl=l;}}
+  if(!bl)return null;const y0=ac[bl-1],y1=ac[bl],y2=ac[bl+1],d=(y0-2*y1+y2),off=d?0.5*(y0-y2)/d:0;const lag=bl+Math.max(-0.5,Math.min(0.5,off));
+  return {bpm:60*fps/lag,conf:ac[bl]/(ac[lmin]||1)};}
+/* --- espectrograma (columnas × filas, eje de frecuencia logarítmico) --- */
+function spectroImage(L,R,sr,a,b,W,H,fmin,fmax){const N=4096,w=hann(N),re=new Float64Array(N),im=new Float64Array(N);fmin=fmin||30;fmax=Math.min(fmax||20000,sr/2);
+  const img=new Uint8ClampedArray(W*H*4),n=b-a;const rowBin=new Float32Array(H);for(let y=0;y<H;y++){const f=fmin*Math.pow(fmax/fmin,1-y/(H-1));rowBin[y]=f*N/sr;}
+  const lut=spLut();
+  for(let x=0;x<W;x++){const c=a+Math.floor(x/W*Math.max(0,n-N));for(let i=0;i<N;i++){const j=c+i,v=j<b?(L[j]+R[j])*0.5:0;re[i]=v*w[i];im[i]=0;}fft(re,im);
+    for(let y=0;y<H;y++){const k=rowBin[y],k0=Math.floor(k),fr=k-k0;const m0=Math.hypot(re[k0],im[k0]),m1=Math.hypot(re[k0+1],im[k0+1]),m=m0*(1-fr)+m1*fr;
+      const db=20*Math.log10(m/(N/4)+1e-9);const t=Math.max(0,Math.min(1,(db+100)/80));const o=(y*W+x)*4,li=Math.round(t*255)*3;img[o]=lut[li];img[o+1]=lut[li+1];img[o+2]=lut[li+2];img[o+3]=255;}}
+  return img;}
+let _spl=null;function spLut(){if(_spl)return _spl;const st=[[0,0,0,4],[.2,40,11,84],[.4,101,21,110],[.6,159,42,99],[.8,212,72,66],[.9,245,125,21],[1,252,255,164]];_spl=new Uint8Array(256*3);
+  for(let i=0;i<256;i++){const t=i/255;let k=0;while(k<st.length-2&&t>st[k+1][0])k++;const A=st[k],B=st[k+1],u=(t-A[0])/(B[0]-A[0]);for(let c=0;c<3;c++)_spl[i*3+c]=Math.round(A[c+1]+(B[c+1]-A[c+1])*u);}return _spl;}
+/* --- quitar ruido (sustracción espectral con suavizado) --- */
+async function noiseProfile(L,R,a,b){const N=2048,hop=512,w=hann(N),re=new Float64Array(N),im=new Float64Array(N),P=new Float64Array(N/2+1);let cnt=0;
+  for(let o=a;o+N<=b;o+=hop){for(let i=0;i<N;i++){re[i]=(L[o+i]+R[o+i])*0.5*w[i];im[i]=0;}fft(re,im);for(let k=0;k<=N/2;k++)P[k]+=Math.hypot(re[k],im[k]);cnt++;}
+  if(!cnt)return null;for(let k=0;k<=N/2;k++)P[k]/=cnt;return P;}
+async function autoNoiseProfile(L,R,a,b){const N=2048,hop=1024,w=hann(N),re=new Float64Array(N),im=new Float64Array(N),fr=[];
+  for(let o=a;o+N<=b;o+=hop){let e=0;const m=new Float64Array(N/2+1);for(let i=0;i<N;i++){re[i]=(L[o+i]+R[o+i])*0.5*w[i];im[i]=0;}fft(re,im);for(let k=0;k<=N/2;k++){m[k]=Math.hypot(re[k],im[k]);e+=m[k];}fr.push({e,m});}
+  if(fr.length<8)return null;fr.sort((p,q)=>p.e-q.e);const use=fr.slice(0,Math.max(4,Math.floor(fr.length*0.1))),P=new Float64Array(N/2+1);for(const f of use)for(let k=0;k<=N/2;k++)P[k]+=f.m[k]/use.length;return P;}
+async function denoiseChan(x,a,b,P,redDb,onP){const N=2048,hop=512,w=hann(N),re=new Float64Array(N),im=new Float64Array(N),n=b-a;
+  const out=new Float32Array(n),nrm=new Float32Array(n),floor=Math.pow(10,-redDb/20),alpha=1.6,g=new Float64Array(N/2+1).fill(1),gs=new Float64Array(N/2+1);let fi=0;const tot=Math.ceil(n/hop);
+  for(let o=-N+hop;o<n;o+=hop){for(let i=0;i<N;i++){const j=o+i;re[i]=(j>=0&&j<n?x[a+j]:0)*w[i];im[i]=0;}fft(re,im);
+    for(let k=0;k<=N/2;k++){const m=Math.hypot(re[k],im[k])||1e-12;let G=(m-alpha*P[k])/m;if(G<floor)G=floor;if(G>1)G=1;const prev=g[k];g[k]=G>=prev?G:Math.max(G,prev*0.75);gs[k]=g[k];}
+    for(let k=1;k<N/2;k++){const s=(gs[k-1]+gs[k]*2+gs[k+1])/4;re[k]*=s;im[k]*=s;re[N-k]=re[k];im[N-k]=-im[k];}re[0]*=gs[0];im[0]=0;re[N/2]*=gs[N/2];im[N/2]=0;
+    ifft(re,im);for(let i=0;i<N;i++){const j=o+i;if(j>=0&&j<n){out[j]+=re[i]*w[i];nrm[j]+=w[i]*w[i];}}
+    if(++fi%64===0){if(onP)onP(Math.min(1,fi/tot));await new Promise(r=>setTimeout(r,0));}}
+  for(let i=0;i<n;i++)out[i]=nrm[i]>1e-6?out[i]/nrm[i]:0;return out;}
+/* --- quitar / acortar silencios --- */
+function silenceRuns(L,R,sr,a,b,thrDb,minSec){const win=Math.max(1,Math.round(sr*0.01)),nw=Math.floor((b-a)/win),thr=Math.pow(10,thrDb/20),runs=[];let st=-1;
+  for(let w=0;w<=nw;w++){let q=true;if(w<nw){let s=0;const o=a+w*win;for(let i=0;i<win;i++){const v=(L[o+i]+R[o+i])*0.5;s+=v*v;}q=Math.sqrt(s/win)<thr;}
+    if(q&&st<0)st=w;else if(!q&&st>=0){if((w-st)*win>=minSec*sr)runs.push([a+st*win,a+w*win]);st=-1;}}
+  if(st>=0&&(nw-st)*win>=minSec*sr)runs.push([a+st*win,a+nw*win]);return runs;}
+function cutRuns(L,R,sr,a,b,runs,keepSec){ /* conserva keepSec de silencio dentro de cada tramo */
+  const keep=Math.round(keepSec*sr),fade=Math.round(0.005*sr),parts=[];let pos=0,removed=0;
+  const outL=[],outR=[];let last=0;const segs=[];
+  for(const [s,e] of runs){const k=Math.min(keep,e-s),h=k>>1;const s1=s+h,e1=e-(k-h);if(e1>s1){segs.push([last,s1]);last=e1;removed+=e1-s1;}}
+  segs.push([last,L.length]);let n=0;for(const [p,q] of segs)n+=q-p;const L2=new Float32Array(n),R2=new Float32Array(n);let o=0;
+  for(let i=0;i<segs.length;i++){const [p,q]=segs[i];L2.set(L.subarray(p,q),o);R2.set(R.subarray(p,q),o);
+    if(i>0){const f=Math.min(fade,q-p,o);for(let j=0;j<f;j++){const g=j/f;L2[o+j]*=g;R2[o+j]*=g;L2[o-1-j]*=g;R2[o-1-j]*=g;}}o+=q-p;}
+  return {L:L2,R:R2,removed};}
+if(false&&typeof module!=='undefined')module.exports={fft,ifft,monoDown,chromaFrames,keyFromChroma,detectChords,detectTempo,chordNotes,CH_TYPES,noiseProfile,autoNoiseProfile,denoiseChan,silenceRuns,cutRuns,spectroImage};
+
+/* ===== v1.16: pestañas Análisis y Acordes, quitar ruido/silencios, marcadores ===== */
+/* ---------- fuente de análisis ---------- */
+function anFillSrc(sel,withStems){
+  const cur=sel.value;sel.innerHTML='';const add=(v,t)=>{const o=document.createElement('option');o.value=v;o.textContent=t;sel.appendChild(o);};
+  add('proj','Todo el proyecto');if(hasSel())add('sel','Selección ('+fmtT(S.b-S.a,S.sr,1)+' s)');
+  if(withStems)ST.tracks.forEach((t,i)=>add('st'+i,'Stem: '+t.name));
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+function anSource(v){
+  if(!len()&&!v.startsWith('st'))return null;
+  if(v==='proj')return {L:S.L,R:S.R,sr:S.sr,a:0,b:len(),off:0,name:baseName(S.name)};
+  if(v==='sel')return {L:S.L,R:S.R,sr:S.sr,a:S.a,b:S.b,off:S.a/S.sr,name:baseName(S.name)+' (selección)'};
+  if(v.startsWith('st')){const t=ST.tracks[+v.slice(2)];if(!t)return null;return {L:t.buf.getChannelData(0),R:t.buf.getChannelData(1),sr:t.buf.sampleRate,a:0,b:t.buf.length,off:ST.part?ST.part.a/ST.sr:0,name:t.name};}
+  return null;
+}
+const CHO={segs:[],key:null,bpm:null,off:0,dur:0,view:'piano',tuneG:'std',tuneB:'std',var:0,cur:-1,lastKey:''};
+/* ---------- tempo y tonalidad ---------- */
+const AN={bpm:null,key:null};
+async function anRun(){
+  const src=anSource($('#anSrc').value);if(!src){toast('No hay audio que analizar',true);return;}
+  if(src.b-src.a<src.sr*3){toast('Hace falta al menos 3 s de audio',true);return;}
+  setBusy('Analizando tempo y tonalidad…',0.2);await sleep(30);
+  try{
+    let a=src.a,b=src.b;const maxN=Math.round(src.sr*120);if(b-a>maxN){const c=(a+b)>>1;a=c-(maxN>>1);b=a+maxN;}
+    const m=monoDown(src.L,src.R,src.sr,a,b);setBusy('Tonalidad…',0.4);await sleep(10);
+    const ch=chromaFrames(m.x,m.sr),k=keyFromChroma(ch);setBusy('Tempo…',0.7);await sleep(10);
+    const t=detectTempo(m.x,m.sr);AN.key=k;AN.bpm=t?t.bpm:null;AN.conf=t?t.conf:0;setBusy(null);anShow();
+  }catch(e){setBusy(null);console.error(e);toast('No se pudo analizar: '+e.message,true);}
+}
+function anShow(){
+  const r=$('#anRes');if(!AN.key&&!AN.bpm){r.textContent='';return;}
+  r.innerHTML='<div class="big">'+(AN.bpm?AN.bpm.toFixed(1)+' BPM':'Tempo no detectado')+'</div><div class="big">'+(AN.key?AN.key.label:'—')+'</div><div class="xs mut">Aproximación: el tempo puede salir al doble o a la mitad (usa ×2 / ÷2); la tonalidad es la más probable según las notas que más suenan'+(AN.key?' (fiabilidad '+Math.round(Math.max(0,AN.key.conf)*100)+' %)':'')+'.</div>';
+}
+function anMeta(){
+  if(!AN.key&&!AN.bpm){toast('Primero analiza',true);return;}
+  if(AN.bpm)EM.f.bpm=String(Math.round(AN.bpm));if(AN.key)EM.f.key=AN.key.name;
+  try{if(window.__metaERender)__metaERender();saveMeta();}catch(e){}
+  toast('Escrito en los metadatos de exportación: '+(AN.bpm?Math.round(AN.bpm)+' BPM':'')+(AN.key?' · '+AN.key.name:''));
+}
+/* ---------- espectrograma ---------- */
+async function spRun(){
+  const src=anSource($('#spSrc').value);if(!src||src.b-src.a<4096){toast('No hay audio suficiente',true);return;}
+  const cv=$('#spCv'),W=Math.min(1400,Math.max(300,Math.round($('#spWrap').clientWidth||600))),H=320;
+  setBusy('Calculando el espectrograma…',0.3);await sleep(30);
+  try{
+    const img=spectroImage(src.L,src.R,src.sr,src.a,src.b,W,H,30,Math.min(20000,src.sr/2));
+    cv.width=W;cv.height=H+22;const g=cv.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,W,H+22);g.putImageData(new ImageData(img,W,H),0,0);
+    g.font='10px system-ui';g.fillStyle='rgba(255,255,255,.85)';g.strokeStyle='rgba(255,255,255,.25)';
+    const fmax=Math.min(20000,src.sr/2);for(const f of [50,100,200,500,1000,2000,5000,10000,20000]){if(f>fmax)continue;const y=H*(1-Math.log(f/30)/Math.log(fmax/30));g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();g.fillText(f>=1000?(f/1000)+' kHz':f+' Hz',4,y-2);}
+    const dur=(src.b-src.a)/src.sr,step=dur>120?30:dur>40?10:dur>12?5:1;for(let t=0;t<dur;t+=step){const x=t/dur*W;g.fillText(fmtT(t*src.sr,src.sr,0),x+2,H+14);}
+    setBusy(null);
+  }catch(e){setBusy(null);console.error(e);toast('No se pudo generar: '+e.message,true);}
+}
+/* ---------- acordes ---------- */
+async function chRun(){
+  const src=anSource($('#chSrc').value);if(!src){toast('No hay audio que analizar',true);return;}
+  if(src.b-src.a<src.sr*2){toast('Hace falta al menos 2 s de audio',true);return;}
+  const sens=$('#chSens').value,pen=sens==='soft'?0.34:sens==='fine'?0.12:0.22,min=sens==='soft'?0.6:sens==='fine'?0.2:0.35;
+  setBusy('Detectando acordes…',0.2);await sleep(30);
+  try{
+    const m=monoDown(src.L,src.R,src.sr,src.a,src.b);setBusy('Analizando las notas…',0.4);await sleep(10);
+    const ch=chromaFrames(m.x,m.sr),k=keyFromChroma(ch);setBusy('Eligiendo los acordes…',0.8);await sleep(10);
+    CHO.segs=detectChords(ch,{flats:k.flats,pen,min});CHO.key=k;CHO.off=src.off;CHO.dur=(src.b-src.a)/src.sr;CHO.cur=-1;CHO.srcName=src.name;
+    try{const t=detectTempo(m.x,m.sr);CHO.bpm=t?t.bpm:null;}catch(e){CHO.bpm=null;}
+    setBusy(null);chInfo();chDrawTl();chUpdate(true);
+  }catch(e){setBusy(null);console.error(e);toast('No se pudo detectar: '+e.message,true);}
+}
+function chInfo(){const n=CHO.segs.filter(s=>s.root>=0).length;$('#chInfo').textContent=CHO.key?('Tonalidad probable: '+CHO.key.label+(CHO.bpm?' · ≈ '+Math.round(CHO.bpm)+' BPM':'')+' · '+n+' acordes en '+fmtT(CHO.dur*S.sr,S.sr,1)+' s ('+CHO.srcName+')'):'';}
+const CH_COL=r=>'hsl('+(r*30)+',55%,42%)';
+function chDrawTl(){
+  const cv=$('#chTl'),wrap=$('#chTlW');if(!cv)return;const pps=40,W=Math.max(wrap.clientWidth||300,Math.ceil(CHO.dur*pps)),H=64,dp=window.devicePixelRatio||1;
+  cv.style.width=W+'px';cv.style.height=H+'px';cv.width=W*dp;cv.height=H*dp;const g=cv.getContext('2d');g.scale(dp,dp);g.clearRect(0,0,W,H);
+  const sx=W/Math.max(0.01,CHO.dur);CHO._sx=sx;
+  CHO.segs.forEach((s,i)=>{const x=s.t0*sx,w=Math.max(1,(s.t1-s.t0)*sx-1);g.fillStyle=s.root<0?'#2a2f3a':CH_COL(s.root);g.fillRect(x,6,w,H-12);
+    if(i===CHO.cur){g.strokeStyle='#fff';g.lineWidth=2;g.strokeRect(x+1,7,w-2,H-14);}
+    if(w>20){g.fillStyle='#fff';g.font='600 13px system-ui';g.textBaseline='middle';g.fillText(s.label,x+4,H/2);}});
+  g.fillStyle='#fff';const px=chPlayX();g.fillRect(px-1,0,2,H);
+}
+function chPlayX(){const p=(S.playing?playPos():S.cur)/S.sr-CHO.off;return clamp(p,0,CHO.dur)*(CHO._sx||1);}
+function chIdxAt(t){for(let i=0;i<CHO.segs.length;i++)if(t>=CHO.segs[i].t0&&t<CHO.segs[i].t1)return i;return CHO.segs.length?(t<0?0:CHO.segs.length-1):-1;}
+function chUpdate(force){
+  if(!CHO.segs.length)return;const t=(S.playing?playPos():S.cur)/S.sr-CHO.off,i=chIdxAt(t);
+  if(i!==CHO.cur||force){CHO.cur=i;CHO.var=0;chShow();}
+  chDrawTl();const w=$('#chTlW'),px=chPlayX();if(S.playing&&(px<w.scrollLeft||px>w.scrollLeft+w.clientWidth-40))w.scrollLeft=Math.max(0,px-40);
+}
+function chShow(){
+  const s=CHO.segs[CHO.cur];if(!s){return;}const flats=CHO.key?CHO.key.flats:false,nm=flats?NOTE_F:NOTE_S;
+  $('#chName').textContent=s.root<0?'Sin acorde':s.label;
+  $('#chNotes').textContent=s.root<0?'':'Notas: '+chordNotes(s.root,s.type).map(p=>nm[p]).join(' · ');
+  chViz();
+}
+/* ---------- afinaciones ---------- */
+const TUN_G={std:['Estándar (E A D G B E)',[40,45,50,55,59,64]],dropd:['Drop D (D A D G B E)',[38,45,50,55,59,64]],half:['Medio tono abajo (Eb Ab Db Gb Bb Eb)',[39,44,49,54,58,63]],full:['Un tono abajo (D G C F A D)',[38,43,48,53,57,62]],dadgad:['DADGAD',[38,45,50,55,57,62]],opend:['Open D (D A D F# A D)',[38,45,50,54,57,62]],openg:['Open G (D G D G B D)',[38,43,50,55,59,62]],opene:['Open E (E B E G# B E)',[40,47,52,56,59,64]],g7:['7 cuerdas (B E A D G B E)',[35,40,45,50,55,59,64]],custom:['Personalizada…',null]};
+const TUN_B={std:['Estándar 4 cuerdas (E A D G)',[28,33,38,43]],dropd:['Drop D (D A D G)',[26,33,38,43]],half:['Medio tono abajo (Eb Ab Db Gb)',[27,32,37,42]],full:['Un tono abajo (D G C F)',[26,31,36,41]],b5:['5 cuerdas (B E A D G)',[23,28,33,38,43]],b6:['6 cuerdas (B E A D G C)',[23,28,33,38,43,48]],custom:['Personalizada…',null]};
+function parseTuning(txt,isBass){
+  const toks=txt.trim().split(/[\s,;-]+/).filter(Boolean);if(toks.length<3||toks.length>8)return null;const out=[];let prev=isBass?23:38;
+  for(const t of toks){const m=/^([A-Ga-g])([#b♯♭]?)(-?\d)?$/.exec(t);if(!m)return null;let pc={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1].toUpperCase()];if(/[#♯]/.test(m[2]))pc++;if(/[b♭]/.test(m[2]))pc--;pc=(pc+12)%12;
+    let midi;if(m[3]!=null)midi=12*(+m[3]+1)+pc;else{midi=pc+12*Math.floor((prev-pc)/12);if(midi<=prev&&out.length)midi+=12;if(midi<prev-3&&!out.length)midi+=12;}
+    out.push(midi);prev=midi;}
+  return out;}
+function curTuning(){const bass=CHO.view==='bass',id=bass?CHO.tuneB:CHO.tuneG,tab=bass?TUN_B:TUN_G;if(id==='custom'){return parseTuning($('#chTuneC').value||'',bass)||tab.std[1];}return tab[id][1];}
+/* ---------- digitaciones de guitarra para cualquier afinación ---------- */
+function guitarVoicings(strings,pcs,root,max){
+  const set=new Set(pcs),need=pcs.length>=4?[pcs[0],pcs[1]]:pcs.slice(0,3),res=new Map(),ns=strings.length;
+  for(let base=0;base<=11;base++){
+    const hi=base+(base===0?4:3),opts=strings.map(m=>{const o=[-1];for(let f=(base===0?0:base);f<=hi;f++){if(set.has((m+f)%12))o.push(f);}if(base>0&&base<=3&&set.has(m%12))o.push(0);return o;});
+    const cur=new Array(ns);
+    const rec=i=>{
+      if(i===ns){const played=cur.map((f,k)=>f>=0?(strings[k]+f)%12:-1);const sounded=played.filter(x=>x>=0);if(sounded.length<Math.min(4,Math.max(3,pcs.length)))return;
+        for(const r of need)if(!sounded.includes(r))return;
+        const fr=cur.filter(f=>f>0);const mn=fr.length?Math.min(...fr):0,mx=fr.length?Math.max(...fr):0;if(mx-mn>3)return;
+        let first=cur.findIndex(f=>f>=0),last=ns-1-[...cur].reverse().findIndex(f=>f>=0);let inner=0;for(let k=first;k<=last;k++)if(cur[k]<0)inner++;
+        let score=sounded.length*2-inner*3-(mx-mn)-mn*0.35+(played[first]===root?3:0)-(sounded.length-new Set(sounded).size)*0.2;if(pcs.length>=4&&!sounded.includes(pcs[2]))score-=1;
+        const key=cur.join(',');if(!res.has(key))res.set(key,{frets:cur.slice(),score});return;}
+      for(const f of opts[i]){cur[i]=f;rec(i+1);}
+    };
+    rec(0);
+  }
+  return [...res.values()].sort((a,b)=>b.score-a.score).slice(0,max||8);}
+/* ---------- dibujo ---------- */
+function chViz(){
+  const cv=$('#chViz');if(!cv)return;const s=CHO.segs[CHO.cur];const W=Math.max(300,cv.parentNode.clientWidth||320),dp=window.devicePixelRatio||1;
+  const view=CHO.view,H=view==='piano'?150:view==='guitar'?250:170;cv.style.width=W+'px';cv.style.height=H+'px';cv.width=W*dp;cv.height=H*dp;const g=cv.getContext('2d');g.scale(dp,dp);g.clearRect(0,0,W,H);
+  $('#chTunRow').style.display=view==='piano'?'none':'';$('#chVar').style.display=view==='guitar'?'':'none';
+  if(!s||s.root<0){g.fillStyle='#8a93a8';g.font='14px system-ui';g.fillText(T('Sin acorde en este momento'),12,28);return;}
+  const pcs=chordNotes(s.root,s.type),flats=CHO.key?CHO.key.flats:false,nm=flats?NOTE_F:NOTE_S,root=s.root;
+  if(view==='piano')vizPiano(g,W,H,pcs,root,nm);else if(view==='guitar')vizGuitar(g,W,H,pcs,root,nm);else vizBass(g,W,H,pcs,root,nm);
+}
+function vizPiano(g,W,H,pcs,root,nm){
+  const start=48,end=72,whites=[];for(let m=start;m<=end;m++)if(![1,3,6,8,10].includes(m%12))whites.push(m);
+  const ww=(W-8)/whites.length,wh=H-40,bh=wh*0.62,x0=4;
+  /* notas a iluminar: fundamental en la octava 3 (C3=48) y el resto hacia arriba */
+  const lit=new Map();let pr=48+root;if(pr>=60)pr-=12;lit.set(pr,'r');let last=pr;for(const p of pcs.slice(1)){let m=last+((p-last%12+12)%12||12);while(m<=last)m+=12;lit.set(m,'n');last=m;}
+  /* y copia una octava arriba de la fundamental si cabe */
+  if(pr+12<=end&&!lit.has(pr+12))lit.set(pr+12,'o');
+  whites.forEach((m,i)=>{const x=x0+i*ww,t=lit.get(m);g.fillStyle=t==='r'?'#ff7ab8':t==='n'?'#19d3c5':t==='o'?'#7a5568':'#f2f4f8';g.fillRect(x,10,ww-1.5,wh);g.strokeStyle='#222';g.strokeRect(x,10,ww-1.5,wh);
+    if(t||m%12===0){g.fillStyle=t==='r'||t==='n'?'#04120f':'#667';g.font='600 11px system-ui';g.textAlign='center';g.fillText(nm[m%12]+(t?'':(m%12===0?(Math.floor(m/12)-1):'')),x+ww/2,10+wh-8);}});
+  const wx=m=>{let i=whites.indexOf(m);return i;};
+  for(let m=start;m<=end;m++){if(![1,3,6,8,10].includes(m%12))continue;const i=whites.indexOf(m-1);if(i<0)continue;const x=x0+(i+1)*ww-ww*0.3,t=lit.get(m);g.fillStyle=t==='r'?'#ff7ab8':t==='n'?'#19d3c5':t==='o'?'#7a5568':'#111';g.fillRect(x,10,ww*0.6,bh);
+    if(t){g.fillStyle='#04120f';g.font='600 10px system-ui';g.textAlign='center';g.fillText(nm[m%12],x+ww*0.3,10+bh-6);}}
+  g.textAlign='left';g.fillStyle='#8a93a8';g.font='11px system-ui';g.fillText(T('Rosa = fundamental · turquesa = resto del acorde'),6,H-8);
+}
+function vizGuitar(g,W,H,pcs,root,nm){
+  const strings=curTuning(),ns=strings.length,vs=guitarVoicings(strings,pcs,root,8);
+  const list=$('#chVoc');
+  if(!vs.length){g.fillStyle='#8a93a8';g.font='14px system-ui';g.fillText(T('No hay una digitación cómoda de este acorde en esta afinación'),12,28);if(list)list.textContent='';return;}
+  const v=vs[CHO.var%vs.length];if(list)list.textContent='Digitación '+((CHO.var%vs.length)+1)+' de '+vs.length;
+  const mx=Math.max(...v.frets),fr=v.frets.filter(f=>f>0),mn=fr.length?Math.min(...fr):1,base=mx<=4?1:mn,nf=5;
+  const gx=Math.min(W-70,260),x0=(W-gx)/2+10,sp=gx/(ns-1),y0=58,fh=(H-y0-18)/nf;
+  g.strokeStyle='#8a93a8';g.fillStyle='#8a93a8';g.lineWidth=1;
+  for(let i=0;i<ns;i++){const x=x0+i*sp;g.beginPath();g.moveTo(x,y0);g.lineTo(x,y0+nf*fh);g.stroke();}
+  for(let f=0;f<=nf;f++){g.lineWidth=(f===0&&base===1)?4:1;g.beginPath();g.moveTo(x0,y0+f*fh);g.lineTo(x0+gx,y0+f*fh);g.stroke();}g.lineWidth=1;
+  if(base>1){g.font='600 12px system-ui';g.textAlign='right';g.fillText(base+'ª',x0-10,y0+fh*0.65);}
+  g.textAlign='center';g.font='600 11px system-ui';
+  v.frets.forEach((f,i)=>{const x=x0+i*sp;
+    g.fillStyle='#8a93a8';g.fillText(nm[strings[i]%12],x,16);
+    if(f<0){g.fillText('×',x,y0-12);}else if(f===0){g.beginPath();g.arc(x,y0-14,5,0,7);g.strokeStyle='#e8ecf4';g.stroke();}
+    else{const rel=f-base+1,y=y0+(rel-0.5)*fh,pc=(strings[i]+f)%12;g.fillStyle=pc===root?'#ff7ab8':'#19d3c5';g.beginPath();g.arc(x,y,Math.min(11,fh*0.4),0,7);g.fill();g.fillStyle='#04120f';g.font='700 10px system-ui';g.fillText(nm[pc],x,y+3.5);g.font='600 11px system-ui';}});
+  g.textAlign='left';
+}
+function vizBass(g,W,H,pcs,root,nm){
+  const strings=curTuning(),ns=strings.length,frets=12,x0=34,gw=W-x0-10,fw=gw/frets,y0=24,sp=(H-y0-30)/(ns-1);
+  g.strokeStyle='#8a93a8';g.fillStyle='#8a93a8';g.lineWidth=1;g.font='11px system-ui';g.textAlign='center';
+  for(let f=0;f<=frets;f++){g.lineWidth=f===0?4:1;g.beginPath();g.moveTo(x0+f*fw,y0);g.lineTo(x0+f*fw,y0+(ns-1)*sp);g.stroke();if(f>0&&[3,5,7,9,12].includes(f))g.fillText(String(f),x0+(f-0.5)*fw,y0+(ns-1)*sp+16);}g.lineWidth=1;
+  for(let i=0;i<ns;i++){const y=y0+(ns-1-i)*sp;g.beginPath();g.moveTo(x0,y);g.lineTo(x0+gw,y);g.stroke();g.textAlign='right';g.fillText(nm[strings[i]%12],x0-8,y+4);g.textAlign='center';}
+  const lowest=Math.min(...strings);
+  for(let i=0;i<ns;i++){const y=y0+(ns-1-i)*sp;for(let f=0;f<=frets;f++){const pc=(strings[i]+f)%12;if(!pcs.includes(pc))continue;const x=f===0?x0-14:x0+(f-0.5)*fw,isR=pc===root;
+    g.fillStyle=isR?'#ff7ab8':'#19d3c5';g.globalAlpha=1;g.beginPath();g.arc(x,y,isR?10:8,0,7);g.fill();g.fillStyle='#04120f';g.font='700 10px system-ui';g.fillText(nm[pc],x,y+3.5);}}
+  g.textAlign='left';g.fillStyle='#8a93a8';g.font='11px system-ui';g.fillText(T('Rosa = fundamental · turquesa = notas del acorde (las del extremo izquierdo son cuerdas al aire)'),6,H-6);
+}
+/* ---------- exportar lista y metadatos ---------- */
+function chExport(){
+  if(!CHO.segs.length){toast('Primero detecta los acordes',true);return;}
+  const f=t=>{const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(1);};
+  const lines=['Acordes de «'+(CHO.srcName||'audio')+'»'+(CHO.key?' · tonalidad '+CHO.key.label:'')+(CHO.bpm?' · ≈ '+Math.round(CHO.bpm)+' BPM':''),''];
+  for(const s of CHO.segs)lines.push(f(s.t0+CHO.off)+' – '+f(s.t1+CHO.off)+'  '+s.label);
+  saveBlob(new Blob([lines.join('\n')],{type:'text/plain'}),cleanName((baseName(S.name)||'audio')+' - acordes')+'.txt');toast('Lista de acordes descargada');
+}
+function chMeta(){if(!CHO.key){toast('Primero detecta los acordes',true);return;}AN.key=CHO.key;AN.bpm=CHO.bpm;anMeta();}
+/* ---------- bucle de la pestaña ---------- */
+function chLoop(){if(document.body.dataset.tab!=='cho')return;if(CHO.segs.length)chUpdate(false);requestAnimationFrame(chLoop);}
+function chOpen(){anFillSrc($('#chSrc'),true);chDrawTl();chViz();requestAnimationFrame(chLoop);}
+function anOpen(){anFillSrc($('#anSrc'),true);anFillSrc($('#spSrc'),true);}
+function chInit(){
+  const seg=mkSeg([['piano','Piano'],['guitar','Guitarra'],['bass','Bajo']],'piano',v=>{CHO.view=v;CHO.var=0;fillTun();chViz();});$('#chView').appendChild(seg);
+  const fillTun=()=>{const bass=CHO.view==='bass',tab=bass?TUN_B:TUN_G,s=$('#chTune');s.innerHTML='';for(const k in tab){const o=document.createElement('option');o.value=k;o.textContent=tab[k][0];s.appendChild(o);}s.value=bass?CHO.tuneB:CHO.tuneG;$('#chTuneC').style.display=s.value==='custom'?'':'none';};
+  $('#chTune').onchange=e=>{if(CHO.view==='bass')CHO.tuneB=e.target.value;else CHO.tuneG=e.target.value;$('#chTuneC').style.display=e.target.value==='custom'?'':'none';CHO.var=0;LS.set('chTune',{g:CHO.tuneG,b:CHO.tuneB});chViz();};
+  $('#chTuneC').oninput=()=>{CHO.var=0;chViz();};
+  const sv=LS.get('chTune',{});if(sv.g&&TUN_G[sv.g])CHO.tuneG=sv.g;if(sv.b&&TUN_B[sv.b])CHO.tuneB=sv.b;fillTun();
+  $('#chVar button').onclick=()=>{CHO.var++;chViz();};
+  $('#chGo').onclick=chRun;$('#chExp').onclick=chExport;$('#chMeta').onclick=chMeta;
+  $('#chPlay').onclick=()=>{if(S.playing)stopPlay();else play();};
+  $('#chStop').onclick=()=>{stopPlay(true);S.cur=Math.round(CHO.off*S.sr);paintAll();chUpdate(true);};
+  $('#chTl').onclick=e=>{const r=$('#chTl').getBoundingClientRect(),t=(e.clientX-r.left)/(CHO._sx||1)+CHO.off;const was=S.playing;if(was)stopPlay(true);S.cur=clamp(Math.round(t*S.sr),0,len());S.a=S.b=S.cur;paintAll();if(was)play();chUpdate(true);};
+  $('#anGo').onclick=anRun;$('#anMeta').onclick=anMeta;$('#spGo').onclick=spRun;
+  $('#anHalf').onclick=()=>{if(AN.bpm){AN.bpm/=2;anShow();}};$('#anDbl').onclick=()=>{if(AN.bpm){AN.bpm*=2;anShow();}};
+  window.addEventListener('resize',()=>{if(document.body.dataset.tab==='cho'){chDrawTl();chViz();}});
+}
+/* ---------- quitar ruido ---------- */
+function doNoise(){
+  if(S.busy||!needAudio())return;
+  openSheet('Quitar ruido',bd=>{
+    bd.innerHTML='<label class="hint">Perfil del ruido</label><select id="nzP" style="width:100%"></select>'+
+     '<label class="hint" style="margin-top:8px">Reducción: <b id="nzV">15</b> dB</label><input type="range" id="nz" min="6" max="30" value="15" style="width:100%">'+
+     '<label class="hint" style="margin-top:8px">Aplicar a</label><select id="nzA" style="width:100%"><option value="all">Todo el proyecto</option></select>'+
+     '<div class="hint" style="margin-top:8px">Reduce ruido constante (soplido, zumbido, ventilador). Con «selección» aprende el ruido de un trozo donde solo se oye el ruido (≥ 0,3 s). Con reducciones altas puede sonar «acuoso»: mejor 10–15 dB.</div>';
+    const p=$('#nzP',bd),o=(v,t)=>{const e=document.createElement('option');e.value=v;e.textContent=t;return e;};
+    if(hasSel()&&S.b-S.a>=S.sr*0.3)p.appendChild(o('sel','Aprender de la selección actual ('+fmtT(S.b-S.a,S.sr,1)+' s)'));
+    p.appendChild(o('auto','Automático (los momentos más silenciosos)'));
+    const A=$('#nzA',bd);if(hasSel())A.appendChild(o('sel','Solo la selección'));
+    $('#nz',bd).oninput=e=>{$('#nzV',bd).textContent=e.target.value;};
+  },[{t:'Cancelar'},{t:'Quitar ruido',pri:1,f:async()=>{
+    const mode=$('#nzP').value,red=+$('#nz').value,scope=$('#nzA').value;
+    const a=scope==='sel'&&hasSel()?S.a:0,b=scope==='sel'&&hasSel()?S.b:len();
+    try{
+      setBusy('Analizando el ruido…',0.02);await sleep(20);
+      const P=mode==='sel'?await noiseProfile(S.L,S.R,S.a,S.b):await autoNoiseProfile(S.L,S.R,a,b);
+      if(!P){setBusy(null);toast('No hay suficiente audio para el perfil de ruido',true);return;}
+      const chs=S.ch==='L'?[0]:S.ch==='R'?[1]:[0,1],NL=S.L.slice(),NR=S.R.slice();
+      for(let k=0;k<chs.length;k++){const c=chs[k],src=c?S.R:S.L,dst=c?NR:NL;
+        const o=await denoiseChan(src,a,b,P,red,p=>setBusy('Quitando ruido… canal '+(k+1)+' de '+chs.length,(k+p)/chs.length));dst.set(o,a);}
+      S.L=NL;S.R=NR;setBusy(null);commit('Quitar ruido ('+red+' dB)');toast('Ruido reducido ('+red+' dB). Si suena raro, deshaz y prueba con menos reducción');
+    }catch(e){setBusy(null);console.error(e);toast('Error al quitar ruido: '+e.message,true);}}}]);
+}
+/* ---------- quitar silencios ---------- */
+function doSilences(){
+  if(S.busy||!needAudio()||!needBoth('Quitar silencios'))return;
+  openSheet('Quitar silencios',bd=>{
+    bd.innerHTML='<div class="row"><span class="sm mut grow">Umbral de silencio</span><input type="number" id="slT" value="-45" min="-80" max="-10" step="1" style="width:84px"><span class="sm mut">dB</span></div>'+
+     '<div class="row" style="margin-top:6px"><span class="sm mut grow">Silencio mínimo a quitar</span><input type="number" id="slM" value="0.5" min="0.05" max="30" step="0.05" style="width:84px"><span class="sm mut">s</span></div>'+
+     '<div class="row" style="margin-top:6px"><span class="sm mut grow">Dejar de cada silencio</span><input type="number" id="slK" value="150" min="0" max="2000" step="10" style="width:84px"><span class="sm mut">ms</span></div>'+
+     '<label class="hint" style="margin-top:8px">Aplicar a</label><select id="slA" style="width:100%"><option value="all">Todo el proyecto</option>'+(hasSel()?'<option value="sel">Solo la selección</option>':'')+'</select>'+
+     '<div class="hint" id="slI" style="margin-top:8px"></div><div class="hint">Acorta los silencios largos (grabaciones de voz o micrófono). Los marcadores se reajustan.</div>';
+    const upd=()=>{const r=slScan();$('#slI',bd).textContent=r?('Se encontraron '+r.runs.length+' silencios; se quitarían ≈ '+(r.removed/S.sr).toFixed(1)+' s.'):'';};
+    for(const id of ['#slT','#slM','#slK','#slA'])$(id,bd).onchange=upd;upd();
+  },[{t:'Cancelar'},{t:'Quitar silencios',pri:1,f:()=>{
+    const r=slScan();if(!r||!r.runs.length){toast('No hay silencios con esos ajustes');return false;}
+    const o=cutRuns(S.L,S.R,S.sr,r.a,r.b,r.runs,r.keep);
+    mkRemap(r.runs,r.keep);S.L=o.L;S.R=o.R;S.a=S.b=0;S.cur=clamp(S.cur,0,o.L.length);commit('Quitar silencios');fitAll();toast('Quitados '+(o.removed/S.sr).toFixed(1)+' s de silencio en '+r.runs.length+' tramos');}}]);
+}
+function slScan(){
+  const thr=+$('#slT').value,min=+$('#slM').value,keep=(+$('#slK').value||0)/1000,sc=$('#slA').value,a=sc==='sel'&&hasSel()?S.a:0,b=sc==='sel'&&hasSel()?S.b:len();
+  const runs=silenceRuns(S.L,S.R,S.sr,a,b,thr,min);let removed=0;for(const [s,e] of runs){const k=Math.min(Math.round(keep*S.sr),e-s);removed+=(e-s)-k;}return {runs,removed,a,b,keep};
+}
+/* ---------- marcadores ---------- */
+const MKC=['#ff7ab8','#ffb340','#5be37d','#7aa8ff','#c58bff','#19d3c5'];
+function MK(){return S.mk||(S.mk=[]);}
+function mkSort(){MK().sort((a,b)=>a.p-b.p);}
+function mkSync(){const h=S.hist[S.hp];if(h)h.mk=MK().map(m=>({...m}));}
+function mkAdd(){
+  if(!needAudio())return;const p=S.playing?playPos():S.cur;
+  if(MK().some(m=>Math.abs(m.p-p)<S.sr*0.05)){toast('Ya hay un marcador aquí');return;}
+  const n=MK().length+1;MK().push({p,n:'Marcador '+n,c:MKC[(n-1)%MKC.length]});mkSort();mkSync();paintAll(true);toast('Marcador en '+fmtT(p,S.sr,2)+' · M para añadir, «Marcadores» para gestionarlos');
+}
+function mkShift(at,d){for(const m of MK())if(m.p>=at)m.p+=d;}
+function mkRemove(a,b){S.mk=MK().filter(m=>m.p<a||m.p>=b).map(m=>m.p>=b?{...m,p:m.p-(b-a)}:m);}
+function mkTrim(a,b){S.mk=MK().filter(m=>m.p>=a&&m.p<b).map(m=>({...m,p:m.p-a}));}
+function mkRemap(runs,keep){const kp=Math.round(keep*S.sr);let adj=0;const rr=runs.map(([s,e])=>{const k=Math.min(kp,e-s),h=k>>1,s1=s+h,e1=e-(k-h);return e1>s1?[s1,e1]:null;}).filter(Boolean);
+  S.mk=MK().map(m=>{let d=0;for(const [s,e] of rr){if(m.p>=e)d+=e-s;else if(m.p>s){d+=m.p-s;break;}else break;}return {...m,p:m.p-d};});}
+function mkPaint(c,RH,CH,CW){
+  const l=MK();if(!l.length)return;c.save();c.font='600 10px system-ui';c.textBaseline='top';
+  for(const m of l){const x=s2x(m.p);if(x<-2||x>CW)continue;c.fillStyle=m.c;c.globalAlpha=.8;c.fillRect(Math.round(x),RH,1,CH-RH);c.globalAlpha=1;c.beginPath();c.moveTo(x,RH);c.lineTo(x+8,RH);c.lineTo(x,RH+10);c.fill();const t=m.n;c.fillStyle='rgba(0,0,0,.55)';c.fillRect(x+9,RH,c.measureText(t).width+6,12);c.fillStyle='#fff';c.fillText(t,x+12,RH+1);}
+  c.restore();}
+function mkDlg(){
+  if(!needAudio())return;
+  openSheet('Marcadores',bd=>{
+    const draw=()=>{bd.innerHTML='';const hint=el('div','hint');hint.textContent=MK().length?'Cada marcador es el inicio de una sección que termina en el siguiente.':'Aún no hay marcadores. Coloca el cursor y pulsa «Marcador» (o la tecla M).';bd.appendChild(hint);
+      mkSort();MK().forEach((m,i)=>{const r=el('div','row');r.style.marginTop='6px';const dot=el('span');dot.style.cssText='width:10px;height:10px;border-radius:50%;flex:none;background:'+m.c;const nm=el('input');nm.type='text';nm.value=m.n;nm.style.cssText='flex:1;min-width:0';nm.onchange=()=>{m.n=nm.value.trim()||m.n;mkSync();paintAll(true);};
+        const t=el('span','xs mut');t.textContent=fmtT(m.p,S.sr,2);const go=el('button','btn sm');go.textContent='Ir';go.onclick=()=>{stopPlay(true);S.cur=m.p;S.a=S.b=m.p;const w=(S.vw||0);centerOn(m.p);paintAll(true);closeSheet();};
+        const x=el('button','btn sm');x.textContent='✕';x.onclick=()=>{S.mk=MK().filter(k=>k!==m);mkSync();paintAll(true);draw();};r.append(dot,nm,t,go,x);bd.appendChild(r);});};
+    draw();
+  },[{t:'Cerrar'},{t:'Añadir en el cursor',f:()=>{mkAdd();mkDlg();return false;}},{t:'Exportar secciones',pri:1,f:()=>mkExport()}]);
+}
+function centerOn(p){S.vs=clamp(p-CW*S.spp/2,0,maxVs());}
+async function mkExport(){
+  mkSort();const mk=MK();if(!mk.length){toast('Pon al menos un marcador',true);return false;}
+  const cuts=[];let prev=0,pn='Inicio';for(const m of mk){if(m.p>prev)cuts.push({a:prev,b:m.p,n:pn});prev=m.p;pn=m.n;}cuts.push({a:prev,b:len(),n:pn});
+  const secs=cuts.filter(c=>c.b-c.a>=Math.round(S.sr*0.05));if(!secs.length){toast('No hay secciones',true);return false;}
+  const out=[],base=baseName(S.name)||'audio';
+  try{
+    if(EXP.fmt==='mp3'&&!(await ensureLame())){toast('MP3 no disponible',true);return false;}
+    for(let i=0;i<secs.length;i++){const c=secs[i],pfx='Sección '+(i+1)+'/'+secs.length+' · ';const ex=await exportCore(S.L,S.R,S.sr,c.a,c.b,false,pfx);const bl=await encodeEx(ex,pfx,null);
+      out.push({name:cleanName(String(i+1).padStart(2,'0')+' - '+base+' - '+c.n)+ex.suf+'.'+EXP.fmt,blob:bl});}
+    setBusy('Preparando la descarga…',0.98);const zb=await makeZip(out);setBusy(null);saveBlob(zb,cleanName(base+' - secciones')+'.zip');toast(secs.length+' secciones exportadas en un ZIP');
+  }catch(e){setBusy(null);console.error(e);toast('Error al exportar: '+e.message,true);}
+}
+ACT.noise=doNoise;ACT.silences=doSilences;ACT.marker=mkAdd;ACT.markers=mkDlg;
+document.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!/INPUT|TEXTAREA|SELECT/.test((document.activeElement||{}).tagName||'')&&document.body.dataset.tab==='edit'){e.preventDefault();mkAdd();}});
+chInit();
+
+/* ===== v1.16: idioma español / inglés y guía de uso ===== */
+window.__VER='1.16';
+const LANG_KEY='shed.lang';
+let LANG='es';try{if(localStorage.getItem(LANG_KEY)==='en')LANG='en';}catch(e){}
+const I18N=JSON.parse(document.getElementById('i18ndata').textContent);
+const I18N_FK=Object.keys(I18N.f).sort((a,b)=>b.length-a.length);
+const I18N_RX=I18N.r.map(r=>[new RegExp(r[0],'g'),r[1]]);
+function T(s){
+  if(LANG!=='en'||!s)return s;
+  const t=s.trim(),e=I18N.x[t];
+  if(e!==undefined)return s.replace(t,e);
+  let o=s;for(const k of I18N_FK)if(o.includes(k))o=o.split(k).join(I18N.f[k]);
+  for(const [rx,rep] of I18N_RX)o=o.replace(rx,rep);
+  return o;
+}
+const I18N_AT=['aria-label','title','placeholder','label'];
+const i18nN=new WeakMap(),i18nA=new WeakMap();
+const i18nSkip=n=>{const p=n.nodeType===3?n.parentNode:n;return p&&p.closest&&p.closest('#guidebody');};
+const i18nExactOnly=n=>{const p=n.nodeType===3?n.parentNode:n;return p&&p.closest&&p.closest('#fname,.bname,.fn');};
+function i18nText(n){
+  const v=n.data;if(!/\S/.test(v)||i18nSkip(n))return;
+  const m=i18nN.get(n);if(m&&v===m.en)return;
+  let en;if(i18nExactOnly(n)){const t=v.trim(),e=I18N.x[t];en=e!==undefined?v.replace(t,e):v;}else en=T(v);
+  if(en===v)return;n.data=en;i18nN.set(n,{es:v,en});
+}
+function i18nAttr(el){
+  if(!el.getAttribute||i18nSkip(el))return;
+  let m=i18nA.get(el);if(!m){m={};i18nA.set(el,m);}
+  for(const a of I18N_AT){const v=el.getAttribute(a);if(v==null)continue;const c=m[a];if(c&&v===c.en)continue;const en=T(v);if(en===v)continue;el.setAttribute(a,en);m[a]={es:v,en};}
+}
+function i18nWalk(root){
+  if(root.nodeType===3){i18nText(root);return;}
+  if(root.nodeType!==1)return;
+  const tg=root.tagName;if(tg==='SCRIPT'||tg==='STYLE'||tg==='TEMPLATE')return;
+  i18nAttr(root);
+  const w=document.createTreeWalker(root,5);let n;
+  while((n=w.nextNode())){
+    if(n.nodeType===3){const p=n.parentNode&&n.parentNode.tagName;if(p!=='SCRIPT'&&p!=='STYLE')i18nText(n);}
+    else if(n.tagName!=='SCRIPT'&&n.tagName!=='STYLE')i18nAttr(n);
+  }
+}
+function i18nRestore(){
+  const w=document.createTreeWalker(document.body,5);let n;
+  while((n=w.nextNode())){
+    if(n.nodeType===3){const m=i18nN.get(n);if(m&&n.data===m.en)n.data=m.es;i18nN.delete(n);}
+    else{const m=i18nA.get(n);if(m){for(const a in m)if(n.getAttribute(a)===m[a].en)n.setAttribute(a,m[a].es);i18nA.delete(n);}}
+  }
+}
+let i18nObs=null;
+function i18nStart(){
+  if(i18nObs||typeof MutationObserver==='undefined')return;
+  i18nObs=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')i18nText(m.target);else if(m.type==='attributes')i18nAttr(m.target);else m.addedNodes.forEach(n=>i18nWalk(n));}});
+  i18nObs.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:I18N_AT});
+}
+function setLang(l,save){
+  l=l==='en'?'en':'es';
+  if(l!==LANG){if(LANG==='en'&&i18nObs){i18nObs.disconnect();i18nObs=null;}if(LANG==='en')i18nRestore();LANG=l;}
+  if(save!==false)try{localStorage.setItem(LANG_KEY,LANG);}catch(e){}
+  document.documentElement.lang=LANG;
+  const b=$('#bLang');if(b){b.textContent=LANG.toUpperCase();}
+  if(LANG==='en'){i18nWalk(document.body);i18nStart();}
+  try{if(typeof chViz==='function'&&CHO&&CHO.segs.length)chViz();if(typeof chInfo==='function')chInfo();if(typeof stmUpdInfo==='function')stmUpdInfo();if(typeof stmSelInfo==='function')stmSelInfo();}catch(e){}
+  if($('#sheet')&&$('#sheet').classList.contains('on')&&$('#guidebody'))guideRender();
+}
+function guideRender(){const b=$('#guidebody'),t=$('#guide-'+LANG);if(b&&t){b.innerHTML=t.innerHTML;const g=$('#gverE',b);if(g)g.textContent=window.__VER||'1.16';}}
+function guideOpen(){
+  openSheet(LANG==='en'?'User guide':'Guía de uso',bd=>{const d=document.createElement('div');d.id='guidebody';bd.appendChild(d);guideRender();},[{t:LANG==='en'?'Close':'Cerrar'}]);
+}
+$('#bLang').onclick=()=>setLang(LANG==='en'?'es':'en');
+$('#bHelp').onclick=guideOpen;
+setLang(LANG,false);
+
 
 /* ====================== ocupado / progreso ====================== */
 let busyEl=null;
@@ -2491,7 +3304,7 @@ async function resample(chans,sr0,sr1){
 function saveBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);}
 function baseName(n){return String(n||'audio').replace(/\.[a-z0-9]{2,5}$/i,'').replace(/[\\/:*?"<>|]+/g,'_').slice(0,80);}
 /* ====================== exportar ====================== */
-const EXP=Object.assign({fmt:'wav',bits:16,kbps:256,sr:0,range:'all',chan:'st',fx:true,norm:false,normV:-1,dither:true},LS.get('exp',{}));
+const EXP=Object.assign({fmt:'wav',bits:16,kbps:256,sr:0,range:'all',chan:'st',fx:true,norm:false,normV:-1,normMode:'peak',lufsV:-14,dither:true},LS.get('exp',{}));
 let lastBlob=null,lastName='';
 function expRange(){return EXP.range==='sel'&&hasSel()?[S.a,S.b]:[0,len()];}
 function fxActive(){const p=dspParams();return !!(p.eq.length||p.cp||p.dy||p.ex||p.tp||p.im||p.mx||p.inG||p.outG);}
@@ -2510,11 +3323,12 @@ function syncExpUI(){
   $('#optWav').style.display=EXP.fmt==='wav'?'flex':'none';$('#optMp3').style.display=EXP.fmt==='mp3'?'flex':'none';$('#rowDither').style.display=EXP.fmt==='wav'&&EXP.bits===16?'flex':'none';
   const m=$('#mp3Msg');m.style.display=EXP.fmt==='mp3'?'block':'none';
   m.textContent='MP3 con el codificador lamejs, incluido en la app (funciona sin conexión).';
-  $('#expSr').value=String(EXP.sr);$('#expFx').checked=EXP.fx;$('#expNorm').checked=EXP.norm;$('#expNormV').value=EXP.normV;$('#expDither').checked=EXP.dither;
+  $('#expSr').value=String(EXP.sr);$('#expFx').checked=EXP.fx;$('#expNorm').checked=EXP.norm;$('#expNormM').value=EXP.normMode;$('#expLufs').value=EXP.lufsV;$('#expNormV').parentNode.style.display=EXP.normMode==='lufs'?'none':'';$('#expLufsRow').style.display=EXP.normMode==='lufs'?'':'none';$('#expNormV').value=EXP.normV;$('#expDither').checked=EXP.dither;
   setExpSeg.fmt(EXP.fmt);setExpSeg.bits(EXP.bits);setExpSeg.kbps(EXP.kbps);setExpSeg.range(EXP.range);setExpSeg.chan(EXP.chan);
   LS.set('exp',EXP);updExpInfo();
 }
 $('#expSr').onchange=e=>{EXP.sr=+e.target.value;syncExpUI();};$('#expFx').onchange=e=>{EXP.fx=e.target.checked;syncExpUI();};$('#expNorm').onchange=e=>{EXP.norm=e.target.checked;syncExpUI();};
+$('#expNormM').onchange=e=>{EXP.normMode=e.target.value;syncExpUI();};$('#expLufs').onchange=e=>{EXP.lufsV=clamp(+e.target.value||-14,-40,-5);syncExpUI();};
 $('#expNormV').onchange=e=>{EXP.normV=clamp(+e.target.value||-1,-30,0);syncExpUI();};$('#expDither').onchange=e=>{EXP.dither=e.target.checked;syncExpUI();};
 $('#expName').oninput=e=>{e.target.dataset.user=1;};
 async function exportCore(Ls,Rs,ssr,a,b,sel,pfx,fxo){ /* devuelve {chans, sr, suf}; fxo={use,params} fija la cadena de un elemento del lote */
@@ -2528,7 +3342,9 @@ async function exportCore(Ls,Rs,ssr,a,b,sel,pfx,fxo){ /* devuelve {chans, sr, su
   else{const m=new Float32Array(L.length);for(let i=0;i<m.length;i++)m[i]=(L[i]+R[i])*0.5;chans=[m];suf='_mono';}
   if(sel)suf='_sel'+suf;
   if(useFx)suf+='_master';
-  if(EXP.norm){let pk=0;for(const c of chans)pk=Math.max(pk,peakOf(c,0,c.length));if(pk>1e-6){const g=Math.pow(10,EXP.normV/20)/pk;for(const c of chans)for(let i=0;i<c.length;i++)c[i]*=g;}}
+  if(EXP.norm&&EXP.normMode==='lufs'){const l=lufsOf(chans[0],chans[1]||chans[0],0,chans[0].length,ssr);let pk=0;for(const c of chans)pk=Math.max(pk,peakOf(c,0,c.length));
+    if(pk>1e-6&&l>-70){let g=Math.pow(10,(EXP.lufsV-l)/20);const ceil=Math.pow(10,-1/20);if(pk*g>ceil)g=ceil/pk;for(const c of chans)for(let i=0;i<c.length;i++)c[i]*=g;}}
+  else if(EXP.norm){let pk=0;for(const c of chans)pk=Math.max(pk,peakOf(c,0,c.length));if(pk>1e-6){const g=Math.pow(10,EXP.normV/20)/pk;for(const c of chans)for(let i=0;i<c.length;i++)c[i]*=g;}}
   let sr=ssr;
   if(EXP.sr&&EXP.sr!==ssr){setBusy(pfx+'Cambiando la frecuencia de muestreo…',0.3);chans=await resample(chans,ssr,EXP.sr);sr=EXP.sr;}
   else if(EXP.fmt==='mp3'&&![8000,11025,12000,16000,22050,24000,32000,44100,48000].includes(sr)){const t=sr>46000?48000:44100;setBusy(pfx+'Ajustando la frecuencia para MP3…',0.3);chans=await resample(chans,sr,t);sr=t;}
@@ -2632,7 +3448,7 @@ function updBatInfo(){
   const b=$('#batInfo');if(!b)return;
   const ch={st:'estéreo',L:'solo canal izquierdo',R:'solo canal derecho',mix:'mono (mezcla)'}[EXP.chan];
   const useFx=EXP.fx&&S.fxOn&&fxActive();
-  b.innerHTML='Cada archivo se exporta completo, <b>'+ch+'</b>, '+(EXP.fmt==='wav'?'WAV '+(EXP.bits===32?'32 bits float':EXP.bits+' bits'):'MP3 '+EXP.kbps+' kbps')+(EXP.sr?', '+EXP.sr+' Hz':'')+(EXP.norm?', normalizado a '+EXP.normV+' dBFS':'')+'.<br>'+
+  b.innerHTML='Cada archivo se exporta completo, <b>'+ch+'</b>, '+(EXP.fmt==='wav'?'WAV '+(EXP.bits===32?'32 bits float':EXP.bits+' bits'):'MP3 '+EXP.kbps+' kbps')+(EXP.sr?', '+EXP.sr+' Hz':'')+(EXP.norm?(EXP.normMode==='lufs'?', volumen a '+EXP.lufsV+' LUFS (pico máx. −1 dBFS)':', normalizado a '+EXP.normV+' dBFS'):'')+'.<br>'+
     (useFx?'<b style="color:var(--acc)">Con la cadena de máster actual</b> ('+(FX.name||'ajustes actuales')+').':'<span style="color:var(--warn)">Sin cadena de máster</span> (está desactivada o sin ajustes; los archivos solo se convierten).');
   $('#bBatGo').disabled=!BAT.items.length||S.busy;
 }
@@ -2697,7 +3513,7 @@ async function decodeAB(ab,name){
 function bufToArrays(buf){const L=buf.getChannelData(0).slice();const R=buf.numberOfChannels>1?buf.getChannelData(1).slice():L.slice();return {L,R,sr:buf.sampleRate};}
 async function placeAudio(L,R,sr,name,dst){
   stopPlay(true);
-  if(dst==='new'||!len()){stemsClear();S.L=L;S.R=R;S.sr=sr;S.name=name;S.a=S.b=S.cur=0;S.hist=[];S.hp=-1;S.vs=0;pushHist('Cargar '+name);fitAll();updInfo();updSelPeak();showTab('edit');toast('Cargado: '+name+' · '+fmtT(L.length,sr,1)+' s · '+sr+' Hz');return;}
+  if(dst==='new'||!len()){stemsClear();S.L=L;S.R=R;S.sr=sr;S.name=name;S.a=S.b=S.cur=0;S.mk=[];S.hist=[];S.hp=-1;S.vs=0;pushHist('Cargar '+name);fitAll();updInfo();updSelPeak();showTab('edit');toast('Cargado: '+name+' · '+fmtT(L.length,sr,1)+' s · '+sr+' Hz');return;}
   if(sr!==S.sr){const o=await resample([L,R],sr,S.sr);L=o[0];R=o[1];}
   const at=dst==='end'?len():S.cur,n=len(),m=L.length;const NL=new Float32Array(n+m),NR=new Float32Array(n+m);
   NL.set(S.L.subarray(0,at));NL.set(L,at);NL.set(S.L.subarray(at),at+m);NR.set(S.R.subarray(0,at));NR.set(R,at);NR.set(S.R.subarray(at),at+m);
@@ -2800,7 +3616,7 @@ function paintRecMeters(){
 }
 setInterval(()=>{if(REC.on&&document.body.dataset.tab!=='rec')$('#recT').textContent=fmtT(Math.round(REC.n/REC.sr*S.sr),S.sr,1);},500);
 /* ====================== pestañas e inicio ====================== */
-const PANELS={edit:'pEdit',master:'pMaster',rec:'pRec',imp:'pImp',stm:'pStm',exp:'pExp',bat:'pBat'};
+const PANELS={edit:'pEdit',master:'pMaster',rec:'pRec',imp:'pImp',stm:'pStm',ana:'pAna',cho:'pCho',exp:'pExp',bat:'pBat'};
 function showTab(t){
   document.body.dataset.tab=t;$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   for(const k in PANELS)$('#'+PANELS[k]).classList.toggle('on',k===t);
@@ -2808,7 +3624,9 @@ function showTab(t){
   if(t==='master'){setTimeout(()=>{eqResize();},0);refreshLists();initAudio().catch(()=>{});}
   if(t==='exp'){syncExpUI();}
   if(t==='bat'){updBatInfo();}
-  if(t==='stm'){requestAnimationFrame(stmPaint);}
+  if(t==='stm'){stmFillPart();requestAnimationFrame(stmPaint);}
+  if(t==='ana')anOpen();
+  if(t==='cho')setTimeout(chOpen,0);
   if(t==='rec'&&!$('#recDev').dataset.init){$('#recDev').dataset.init=1;listDevices(false);}
   LS.set('tab',t);
 }
