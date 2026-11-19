@@ -1,7 +1,7 @@
-/* SampledHead Editor v1.16 · service worker */
-const V='shed-1.16',LAME='shed-lame',ORT='shed-ort',KEEP=[LAME,ORT,'sh-models-v1'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(['./','index.html','manifest.webmanifest'])).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&!KEEP.includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+/* SampledHead Editor v1.17 · service worker */
+const V='shed-1.17',LAME='shed-lame',ORT='shed-ort',KEEP=[LAME,ORT,'sh-models-v1'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(['./','index.html','manifest.webmanifest','sh-core.js'])).then(()=>self.skipWaiting()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('shed-')&&k!==V&&!KEEP.includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
   if(/lame\.min\.js$/.test(u.pathname)){
