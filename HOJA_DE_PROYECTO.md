@@ -1,6 +1,6 @@
 # SampledHead Editor — Hoja de proyecto
 
-Familia de apps de **Sampled Head**. **Versión actual:** 1.18 (19-11-2026) ·
+Familia de apps de **Sampled Head**. **Versión actual:** 1.19 (21-11-2026) ·
 **Web:** https://sampledhead-dot.github.io/sampledhead-editor/ · **Repo:** sampledhead-dot/sampledhead-editor
 
 ## Descripción
@@ -12,7 +12,7 @@ separa stems con IA, analiza acordes y tempo, pone marcadores y exporta (WAV/MP3
   historial `S.hist/S.hp` con `pushHist(label)` / `restore(h)`). Vista: `s2x/x2s`, `S.vs` (inicio), `S.spp` (muestras por píxel).
 - Pestañas: Editor, Máster (cadena EQ, compresor, multibanda, exciter, cinta, imager, maximizer; 424 presets), Grabar,
   Importar, Stems (htdemucs_6s con onnxruntime-web), Análisis, Acordes, Exportar, Lote.
-- Proyectos `.shproj` (audio + máster + selección + marcadores + metadatos + portada + stems).
+- Proyectos `.shproj` (audio + máster + selección + marcadores + metadatos + portada + stems). Desde 1.19 hay biblioteca «Mis proyectos»: IndexedDB `shed-projects` (almacén `meta` con nombre, fecha, duración, tamaño y mini-onda; almacén `data` con el Blob .shproj), `PL` en el código; entra en la copia `.shdatos` (sh-core 1.2.2: `OWN.editor.idb`).
 - `sh-core.js` — base común (bandeja «⇄ Apps», «Enviar a…», modelos compartidos, copia `.shdatos`). Se edita solo en
   `SH-apps/sh-core` y se reparte con `node sh-core/sync.js`.
 - Puente antiguo con el sampler: IndexedDB `sh-bridge` (`toEditor` / `toSampler`), WAV 24 bit.
@@ -20,6 +20,7 @@ separa stems con IA, analiza acordes y tempo, pone marcadores y exporta (WAV/MP3
 - `sw.js` — caché `shed-<versión>`; conserva LAME, ORT y `sh-models-v1`; solo borra sus propias cachés.
 
 ## Historial
+- **1.19** (21-11-2026): **«Mis proyectos»**: 💾 guarda por defecto dentro de la app (nombre, versión ligera, y casilla para descargar además un .shproj; avisa si el nombre ya existe y lo sustituye); 📂 abre la lista (Abrir, Renombrar, Descargar, Borrar con confirmación, Abrir archivo…, Guardar el actual). **Arreglo Android:** el selector de archivos tenía `accept=".shproj"` y no mostraba los proyectos; ahora no filtra por extensión. sh-core 1.2.2 (cambio de una línea: `editor.idb=['shed-projects']`; hay que hacerlo también en `SH-apps/sh-core`).
 - **1.18** (19-11-2026): **marcadores arrastrables** desde su bandera en la regla (se puede deshacer: «Mover marcador»;
   un toque en la bandera lleva el cursor); **informe de error .txt** automático (`window.onerror`, promesas, máx. 3 por
   sesión) y botón **Informe** con la versión en la barra inferior.
