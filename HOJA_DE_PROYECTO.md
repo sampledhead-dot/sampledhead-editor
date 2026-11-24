@@ -1,6 +1,6 @@
 # SampledHead Editor — Hoja de proyecto
 
-Familia de apps de **Sampled Head**. **Versión actual:** 1.20 (24-11-2026) ·
+Familia de apps de **Sampled Head**. **Versión actual:** 1.21 (24-11-2026) ·
 **Web:** https://sampledhead-dot.github.io/sampledhead-editor/ · **Repo:** sampledhead-dot/sampledhead-editor
 
 ## Descripción
@@ -20,6 +20,7 @@ separa stems con IA, analiza acordes y tempo, pone marcadores y exporta (WAV/MP3
 - `sw.js` — caché `shed-<versión>`; conserva LAME, ORT y `sh-models-v1`; solo borra sus propias cachés.
 
 ## Historial
+- **1.21** (24-11-2026): **arreglo**: «Mis proyectos» (`shed-projects`) se abre sin número de versión fijo y crea los almacenes que falten; una copia .shdatos sumada en la app única de Android podía dejar la base en otra versión y la biblioteca salía vacía. sh-core 1.4.1.
 - **1.20** (24-11-2026): pestaña **Tracker** (grabación larga → pistas: detección por silencio —vinilo/CD— o por bajadas de nivel —directos— con umbral automático o fijo, pausa y pista mínimas; los cortes son los marcadores del Editor; lista con título, inicio editable, ±0,1/±1 s, oír el corte y el final; metadatos comunes + portada; exporta ZIP «NN - Título» etiquetado, con recorte de silencio en los extremos y fundidos; formato/normalización/máster de Exportar). Pestaña **Metadatos** (MP3 y WAV: abre archivos o carpeta —File System Access cuando existe—, tabla editable, edición en bloque, numerar 1/N, título desde el nombre, portada; «Guardar cambios» reescribe el MISMO archivo conservando el audio y los marcos ID3 que no se editan —USLT, TXXX, APIC original…—; WAV: sustituye LIST/INFO e «id3 » y conserva el resto de bloques; sin FSA (móvil, Firefox, Safari) descarga los archivos con el mismo nombre). sh-core 1.3.0 (envío entre apps instaladas en Android).
 - **1.19** (21-11-2026): **«Mis proyectos»**: 💾 guarda por defecto dentro de la app (nombre, versión ligera, y casilla para descargar además un .shproj; avisa si el nombre ya existe y lo sustituye); 📂 abre la lista (Abrir, Renombrar, Descargar, Borrar con confirmación, Abrir archivo…, Guardar el actual). **Arreglo Android:** el selector de archivos tenía `accept=".shproj"` y no mostraba los proyectos; ahora no filtra por extensión. sh-core 1.2.2 (cambio de una línea: `editor.idb=['shed-projects']`; hay que hacerlo también en `SH-apps/sh-core`).
 - **1.18** (19-11-2026): **marcadores arrastrables** desde su bandera en la regla (se puede deshacer: «Mover marcador»;
