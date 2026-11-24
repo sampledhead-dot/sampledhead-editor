@@ -1,6 +1,6 @@
 # SampledHead Editor — Hoja de proyecto
 
-Familia de apps de **Sampled Head**. **Versión actual:** 1.20 (21-11-2026) ·
+Familia de apps de **Sampled Head**. **Versión actual:** 1.20 (24-11-2026) ·
 **Web:** https://sampledhead-dot.github.io/sampledhead-editor/ · **Repo:** sampledhead-dot/sampledhead-editor
 
 ## Descripción
